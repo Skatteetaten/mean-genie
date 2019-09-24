@@ -1,0 +1,34 @@
+spring:
+    profiles:
+        active: local
+
+logging:
+  level:
+    no.skatteetaten.aurora.mean.genie: INFO
+    org:
+      hibernate: WARN
+      springframework: WARN
+      apache:
+        catalina: WARN
+        velocity: WARN
+
+---
+spring:
+    profiles: local
+
+mean-genie:
+    username: mean-genie
+    password: mean-genie
+    delete:
+        resources: false
+
+
+logging:
+    pattern:
+      console: "%d [%-9.9thread] %highlight(%-5level) %cyan(%logger:%L) %X - %msg %n%rEx{full}"
+    # add mokey.openshift.token to ~/.spring-boot-devtools.properties
+
+
+---
+spring:
+  profiles: openshift
