@@ -13,8 +13,8 @@ import javax.servlet.http.HttpServletRequest
 @Configuration
 @EnableWebSecurity
 class WebSecurityConfig(
-        @Value("\${management.server.port}") val managementPort: Int,
-        val authEntryPoint: BasicAuthenticationEntryPoint
+    @Value("\${management.server.port}") val managementPort: Int,
+    val authEntryPoint: BasicAuthenticationEntryPoint
 
 ) : WebSecurityConfigurerAdapter() {
 
@@ -23,12 +23,12 @@ class WebSecurityConfig(
     override fun configure(http: HttpSecurity) {
 
         http.csrf().disable().sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // We don't need sessions to be created.
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS) // We don't need sessions to be created.
 
         http.authorizeRequests()
-                .requestMatchers(forPort(managementPort)).permitAll()
-                .antMatchers("/docs/index.html").permitAll()
-                .antMatchers("/").permitAll()
-                .and().httpBasic().realmName("MEAN-GENIE").authenticationEntryPoint(authEntryPoint)
+            .requestMatchers(forPort(managementPort)).permitAll()
+            .antMatchers("/docs/index.html").permitAll()
+            .antMatchers("/").permitAll()
+            .and().httpBasic().realmName("MEAN-GENIE").authenticationEntryPoint(authEntryPoint)
     }
 }
