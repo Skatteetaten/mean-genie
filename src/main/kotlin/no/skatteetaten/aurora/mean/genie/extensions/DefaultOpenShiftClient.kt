@@ -7,7 +7,7 @@ import no.skatteetaten.aurora.mean.genie.model.ApplicationDeployment
 import no.skatteetaten.aurora.mean.genie.model.ApplicationDeploymentList
 import okhttp3.Request
 
-//TODO finn en bedre måte på å finne et knipe applicationdeployments
+// TODO finn en bedre måte på å finne et knipe applicationdeployments
 fun DefaultOpenShiftClient.applicationDeploymentsTemporary(): List<ApplicationDeployment> {
     val url =
         this.openshiftUrl.toURI().resolve("/apis/skatteetaten.no/v1/applicationdeployments?labelSelector=removeAfter")
