@@ -12,6 +12,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationEn
 @Configuration
 class ApplicationConfig : BeanPostProcessor {
 
+    //TODO hvorfor returnerer vi OpenShiftClient og ikke DefaultOpenShiftClient som return value
     @Bean
     fun client(): OpenShiftClient {
         return DefaultOpenShiftClient()

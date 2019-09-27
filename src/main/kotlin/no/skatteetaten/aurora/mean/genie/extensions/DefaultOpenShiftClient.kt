@@ -7,22 +7,6 @@ import no.skatteetaten.aurora.mean.genie.model.ApplicationDeployment
 import no.skatteetaten.aurora.mean.genie.model.ApplicationDeploymentList
 import okhttp3.Request
 
-fun DefaultOpenShiftClient.deleteApplicationDeployment(namespace: String, name: String): Boolean {
-    val url =
-        this.openshiftUrl.toURI().resolve("/apis/skatteetaten.no/v1/namespaces/$namespace/applicationdeployments/$name")
-    return try {
-        val request = Request.Builder().url(url.toString()).delete().build()
-        this.httpClient.newCall(request).execute().use {
-            it.isSuccessful
-        }
-    } catch (e: Exception) {
-        throw KubernetesClientException(
-            "Error occurred while deleting temporary application deployment namespace=$namespace name=$name",
-            e
-        )
-    }
-}
-
 fun DefaultOpenShiftClient.applicationDeploymentsTemporary(): List<ApplicationDeployment> {
     val url =
         this.openshiftUrl.toURI().resolve("/apis/skatteetaten.no/v1/applicationdeployments")
