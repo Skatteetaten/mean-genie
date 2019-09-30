@@ -12,5 +12,5 @@ class EventController(
 ) {
 
     @GetMapping("/applicationDeployments")
-    fun listApplicationDeployments() = openShiftService.findTemporaryApplicationDeployments()
+    fun listApplicationDeployments() = openShiftService.findApplicationDeployments()
 }

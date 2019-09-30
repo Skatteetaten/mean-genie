@@ -32,7 +32,3 @@ logging:
 ---
 spring:
   profiles: openshift
-
-mean-genie:
-    username: mean-genie
-    password: mean-genie
