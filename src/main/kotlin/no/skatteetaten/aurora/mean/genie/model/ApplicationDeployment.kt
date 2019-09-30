@@ -3,9 +3,8 @@ package no.skatteetaten.aurora.mean.genie.model
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonInclude
 import io.fabric8.kubernetes.api.model.ObjectMeta
-import no.skatteetaten.aurora.mean.genie.extensions.REMOVE_AFTER_LABEL
+import no.skatteetaten.aurora.mean.genie.extensions.AFFILIATION_LABEL
 import no.skatteetaten.aurora.mean.genie.service.ApplicationDeploymentResource
-import java.time.Duration
 import java.time.Instant
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -22,20 +21,18 @@ data class ApplicationDeployment(
     val apiVersion: String = "skatteetaten.no/v1"
 ) {
 
-    fun toResource(now: Instant): ApplicationDeploymentResource {
-        val removalTime = this.removalTime()
+    fun toResource(): ApplicationDeploymentResource {
+        val affiliation = this.affiliation()
 
         return ApplicationDeploymentResource(
             name = this.metadata.name,
             namespace = this.metadata.namespace,
-            ttl = Duration.between(now, removalTime),
-            removalTime = removalTime
+            affiliation = affiliation
         )
     }
 
-    fun removalTime(): Instant {
-        return this.metadata.labels[REMOVE_AFTER_LABEL]?.let {
-            Instant.ofEpochSecond(it.toLong())
-        } ?: throw IllegalStateException("removeAfter is not set or valid timstamp")
+    fun affiliation(): String {
+        return this.metadata.labels[AFFILIATION_LABEL]
+            ?: throw IllegalStateException("removeAfter is not set or valid timstamp")
     }
 }

@@ -13,5 +13,5 @@ class OpenShiftService(
 
     fun findApplicationDeployments(now: Instant = Instant.now()): List<ApplicationDeploymentResource> =
         (client as DefaultOpenShiftClient).applicationDeployments()
-            .map { it.toResource(now) }
+            .map { it.toResource() }
 }

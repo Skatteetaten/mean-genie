@@ -2,13 +2,9 @@ package no.skatteetaten.aurora.mean.genie.extensions
 
 import io.fabric8.kubernetes.api.model.HasMetadata
 import java.lang.IllegalStateException
-import java.time.Instant
 
-const val REMOVE_AFTER_LABEL = "removeAfter"
-const val TERMINATING_PHASE = "Terminating"
+const val AFFILIATION_LABEL = "affiliation"
 
-fun HasMetadata.removalTime(): Instant {
-    return this.metadata.labels[REMOVE_AFTER_LABEL]?.let {
-        Instant.ofEpochSecond(it.toLong())
-    } ?: throw IllegalStateException("removeAfter is not set or valid timstamp")
+fun HasMetadata.affiliation(): String {
+    return this.metadata.labels[AFFILIATION_LABEL]?: throw IllegalStateException("affiliation is not set or invalid")
 }

@@ -9,7 +9,7 @@ import okhttp3.Request
 
 fun DefaultOpenShiftClient.applicationDeployments(): List<ApplicationDeployment> {
     val url =
-        this.openshiftUrl.toURI().resolve("/apis/skatteetaten.no/v1/applicationdeployments?labelSelector=removeAfter")
+        this.openshiftUrl.toURI().resolve("/apis/skatteetaten.no/v1/applicationdeployments?labelSelector=affiliation")
 
     return try {
         val request = Request.Builder().url(url.toString()).build()
