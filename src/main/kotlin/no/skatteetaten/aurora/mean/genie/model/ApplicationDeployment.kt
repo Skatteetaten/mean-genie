@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonInclude
 import io.fabric8.kubernetes.api.model.ObjectMeta
 import no.skatteetaten.aurora.mean.genie.extensions.AFFILIATION_LABEL
 import no.skatteetaten.aurora.mean.genie.service.ApplicationDeploymentResource
-import java.time.Instant
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
