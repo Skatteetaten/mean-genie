@@ -4,13 +4,14 @@ import java.time.Duration
 import java.time.Instant
 
 interface BaseResource {
+    val ttl: Duration
     val name: String
+    val removalTime: Instant
 }
 
 data class ApplicationDeploymentResource(
     override val name: String,
     val namespace: String,
-    val ttl: Duration,
-    val removalTime: Instant
-    // val affiliation: String
+    override val ttl: Duration,
+    override val removalTime: Instant
 ) : BaseResource

@@ -11,7 +11,7 @@ class OpenShiftService(
     val client: OpenShiftClient
 ) {
 
-    fun findApplicationDeployments(now: Instant = Instant.now()): List<ApplicationDeploymentResource> =
+    fun findTemporaryApplicationDeployments(now: Instant = Instant.now()): List<ApplicationDeploymentResource> =
         (client as DefaultOpenShiftClient).applicationDeploymentsTemporary()
             .map { it.toResource(now) }
 }

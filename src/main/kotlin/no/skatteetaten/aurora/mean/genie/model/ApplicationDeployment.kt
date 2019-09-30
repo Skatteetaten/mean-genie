@@ -30,7 +30,6 @@ data class ApplicationDeployment(
             namespace = this.metadata.namespace,
             ttl = Duration.between(now, removalTime),
             removalTime = removalTime
-            // affiliation = this.metadata.labels.getOrDefault("affiliation", "missing affiliation")
         )
     }
 
