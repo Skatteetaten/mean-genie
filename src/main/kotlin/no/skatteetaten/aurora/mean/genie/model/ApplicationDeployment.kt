@@ -32,6 +32,6 @@ data class ApplicationDeployment(
 
     fun affiliation(): String {
         return this.metadata.labels[AFFILIATION_LABEL]
-            ?: throw IllegalStateException("removeAfter is not set or valid timstamp")
+            ?: throw IllegalStateException("affiliation is not set or invalid")
     }
 }
