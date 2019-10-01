@@ -12,5 +12,6 @@ class EventController(
 ) {
 
     @GetMapping("/applicationDeployments")
-    fun listApplicationDeployments() = openShiftService.findApplicationDeployments()
+    fun listApplicationDeployments() =
+        openShiftService.findApplicationDeployments().filter { it.affiliation.contentEquals("aurora") }
 }
