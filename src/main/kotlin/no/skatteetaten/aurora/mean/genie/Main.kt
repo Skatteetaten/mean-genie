@@ -8,18 +8,12 @@ import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 
 @SpringBootApplication
-class Main : CommandLineRunner {
+class Main : CommandLineRunner{
     private val logger = KotlinLogging.logger {}
     @Autowired
     private val appsOperator: ApplicationDeploymentOperator? = null
-
     private var initDone = false
     private var crdsFound = false
-
-    fun main(args: Array<String>) {
-
-        SpringApplication.run(Main::class.java, *args)
-    }
 
     @Throws(Exception::class)
     override fun run(vararg args: String) {
@@ -30,3 +24,8 @@ class Main : CommandLineRunner {
         }
     }
 }
+fun main(args: Array<String>) {
+
+    SpringApplication.run(Main::class.java, *args)
+}
+
