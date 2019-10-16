@@ -24,7 +24,7 @@ class K8SCoreRuntime(private val client: OpenShiftClient) {
     }
 
     fun <T : HasMetadata, L : KubernetesResourceList<*>, D : Doneable<T>> customResourcesClient(
-        crd: CustomResourceDefinition?,
+        crd: CustomResourceDefinition,
         resourceType: Class<T>,
         listClass: Class<L>,
         doneClass: Class<D>

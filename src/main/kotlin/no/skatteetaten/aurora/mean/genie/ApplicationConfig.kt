@@ -2,6 +2,7 @@ package no.skatteetaten.aurora.mean.genie
 
 import io.fabric8.openshift.client.DefaultOpenShiftClient
 import io.fabric8.openshift.client.OpenShiftClient
+import no.skatteetaten.aurora.mean.genie.core.K8SCoreRuntime
 import org.springframework.beans.factory.config.BeanPostProcessor
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -28,4 +29,11 @@ class ApplicationConfig : BeanPostProcessor {
             it.realmName = "MEAN-GENIE"
         }
     }
+
+    /*
+    @Bean
+    fun appCrdClient(k8SCoreRuntime: K8SCoreRuntime) {
+
+
+    }*/
 }

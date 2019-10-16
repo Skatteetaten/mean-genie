@@ -13,20 +13,14 @@ import no.skatteetaten.aurora.mean.genie.crd.ApplicationDeploymentList
 import org.springframework.stereotype.Service
 
 @Service
-class ApplicationDeploymentOperator(private val k8SCoreRuntime: K8SCoreRuntime, private val appService: AppService) {
+class ApplicationDeploymentOperator(private val k8SCoreRuntime: K8SCoreRuntime) {
 
     private val logger = KotlinLogging.logger {}
     private var applicationDeploymentCRD: CustomResourceDefinition? = null
-    private var appsResourceVersion: String? = null
     private var applicationWatchRegistered = false
+    private var appCRDClient: NonNamespaceOperation<ApplicationDeployment, ApplicationDeploymentList, ApplicationDeploymentDoneable, Resource<ApplicationDeployment, ApplicationDeploymentDoneable>>? = null
 
-    private var appCRDClient: NonNamespaceOperation<ApplicationDeployment, ApplicationDeploymentList, ApplicationDeploymentDoneable, Resource<ApplicationDeployment, ApplicationDeploymentDoneable>>? =
-        k8SCoreRuntime.customResourcesClient(
-            applicationDeploymentCRD,
-            ApplicationDeployment::class.java,
-            ApplicationDeploymentList::class.java,
-            ApplicationDeploymentDoneable::class.java
-        )
+
 
     fun areRequiredCRDsPresent(): Boolean {
         try {
@@ -82,6 +76,13 @@ class ApplicationDeploymentOperator(private val k8SCoreRuntime: K8SCoreRuntime, 
     }
 
     fun init(): Boolean {
+        appCRDClient = k8SCoreRuntime.customResourcesClient(
+                applicationDeploymentCRD!!,
+                ApplicationDeployment::class.java,
+                ApplicationDeploymentList::class.java,
+                ApplicationDeploymentDoneable::class.java
+            )
+
         if (!applicationWatchRegistered) {
             registerApplicationWatch()
         }
@@ -89,15 +90,4 @@ class ApplicationDeploymentOperator(private val k8SCoreRuntime: K8SCoreRuntime, 
         return true
     }
 
-    private fun loadExistingResources() {
-        val applicationList = appCRDClient!!.list().items
-        if (applicationList.isNotEmpty()) {
-            appsResourceVersion = applicationList[0].metadata.resourceVersion
-            logger.info(">> Applications Resource Version: $appsResourceVersion")
-            applicationList.forEach { app ->
-                appService.addApp(app.metadata.name, app)
-                logger.info("> App " + app.metadata.name + " found.")
-            }
-        }
-    }
 }
