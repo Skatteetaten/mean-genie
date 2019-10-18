@@ -1,0 +1,51 @@
+{
+  "type": "ADDED",
+  "object": {
+    "apiVersion": "skatteetaten.no/v1",
+    "kind": "ApplicationDeployment",
+    "metadata": {
+      "creationTimestamp": "2019-10-17T08:29:47Z",
+      "generation": 1,
+      "labels": {
+        "affiliation": "aurora",
+        "app": "mean-genie",
+        "applicationId": "7787f69138a1fa629cd5aab38d88cc9bf8d728d9",
+        "booberDeployId": "0bc992d",
+        "id": "f8ff39efd0a77869daef6d005ffd8efd88c9acd4",
+        "name": "mean-genie",
+        "removeAfter": "1571561331",
+        "updatedBy": "m89645"
+      },
+      "name": "mean-genie",
+      "namespace": "aurora-dev",
+      "resourceVersion": "1867464222",
+      "selfLink": "/apis/skatteetaten.no/v1/namespaces/aurora-dev/applicationdeployments/mean-genie",
+      "uid": "47bee7fc-f0b8-11e9-85b1-005056844c47"
+    },
+    "spec": {
+      "applicationDeploymentId": "f8ff39efd0a77869daef6d005ffd8efd88c9acd4",
+      "applicationDeploymentName": "mean-genie",
+      "applicationId": "7787f69138a1fa629cd5aab38d88cc9bf8d728d9",
+      "applicationName": "mean-genie",
+      "command": {
+        "applicationDeploymentRef": {
+          "application": "mean-genie",
+          "environment": "dev-qa"
+        },
+        "auroraConfig": {
+          "name": "aurora",
+          "refName": "master",
+          "resolvedRef": "59bbcc25"
+        },
+        "overrideFiles": {}
+      },
+      "databases": [],
+      "deployTag": "feature_aos_3661-SNAPSHOT",
+      "managementPath": ":8081/actuator",
+      "selector": {
+        "name": "mean-genie"
+      },
+      "splunkIndex": ""
+    }
+  }
+}

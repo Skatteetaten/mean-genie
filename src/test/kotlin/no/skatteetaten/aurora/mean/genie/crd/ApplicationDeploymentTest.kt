@@ -1,4 +1,4 @@
-package no.skatteetaten.aurora.mean.genie.service
+package no.skatteetaten.aurora.mean.genie.crd
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
@@ -16,7 +16,6 @@ class ApplicationDeploymentTest {
         val json = jacksonObjectMapper().writeValueAsString(applicationDeployment)
         println(json)
         val result = jacksonObjectMapper().readValue<ApplicationDeployment>(json)
-        assertThat (result.spec.applicationDeploymentId).isEqualTo("123")
-
+        assertThat (result.spec?.applicationDeploymentId).isEqualTo("123")
     }
 }

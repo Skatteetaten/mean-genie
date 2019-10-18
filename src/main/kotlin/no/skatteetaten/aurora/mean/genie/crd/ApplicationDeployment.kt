@@ -5,8 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import io.fabric8.kubernetes.client.CustomResource
 
+@JsonDeserialize
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class ApplicationDeployment(val spec: ApplicationDeploymentSpec) : CustomResource() {
+data class ApplicationDeployment(val spec: ApplicationDeploymentSpec?) : CustomResource() {
 
     // var spec: ApplicationDeploymentSpec? = null
 
