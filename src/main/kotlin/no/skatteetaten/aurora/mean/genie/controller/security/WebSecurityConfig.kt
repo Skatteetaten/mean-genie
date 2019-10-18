@@ -17,8 +17,8 @@ import javax.servlet.http.HttpServletRequest
 @EnableWebSecurity
 class WebSecurityConfig(
     @Value("\${management.server.port}") val managementPort: Int,
-    @Value("\${mean-genie.username}") val userName: String,
-    @Value("\${mean-genie.password}") val password: String,
+    @Value("\${meangenie.username}") val userName: String,
+    @Value("\${meangenie.password}") val password: String,
     val passwordEncoder: PasswordEncoder,
     val authEntryPoint: BasicAuthenticationEntryPoint
 

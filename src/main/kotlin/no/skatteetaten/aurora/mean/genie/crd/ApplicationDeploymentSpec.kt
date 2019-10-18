@@ -4,17 +4,17 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import io.fabric8.kubernetes.api.model.KubernetesResource
 
-@JsonDeserialize
-@JsonIgnoreProperties(ignoreUnknown = true)
-class ApplicationDeploymentSpec : KubernetesResource {
 
-    private var applicationDeploymentId: String? = "UNKNOWN"
-    private var applicationDeploymentName: String? = "UNKNOWN"
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class ApplicationDeploymentSpec(val applicationDeploymentId: String, val applicationDeploymentName: String) : KubernetesResource{
+
+    //private val applicationDeploymentId: String? = null
+    //private val applicationDeploymentName: String? = null
 
     override fun toString(): String {
         return "ApplicationSpec{" +
-            "applicationDeploymentName='" + applicationDeploymentName + '\'' +
-            ", applicationDeploymentId='" + applicationDeploymentId + '\'' +
-            '}'
+            "version='" + applicationDeploymentId + '\''.toString() +
+            ", selector='" + applicationDeploymentName + '\''.toString()
+            '}'.toString()
     }
 }

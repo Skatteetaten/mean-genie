@@ -1,5 +1,9 @@
 package no.skatteetaten.aurora.mean.genie.service
 
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import io.fabric8.kubernetes.client.CustomResource
 import io.fabric8.kubernetes.client.KubernetesClientException
 import io.fabric8.kubernetes.client.Watcher
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation
@@ -18,18 +22,24 @@ class ApplicationDeploymentOperator(
 ) {
 
     fun init(): Boolean {
-
         logger.info("> Registering Application CRD Watch")
-        appCRDClient?.watch(object : Watcher<ApplicationDeployment> {
-            override fun eventReceived(action: Watcher.Action, application: ApplicationDeployment) {
-                if (action == Watcher.Action.DELETED) {
-                    logger.info(">> Deleting App: " + application.metadata.name)
-                }
-            }
-
-            override fun onClose(cause: KubernetesClientException) {}
-        })
+        appCRDClient?.watch(ApplicationDeploymentWatcher())
 
         return true
+    }
+}
+
+class ApplicationDeploymentWatcher : Watcher<ApplicationDeployment> {
+    override fun eventReceived(action: Watcher.Action?, resource: ApplicationDeployment?) {
+        if (action == Watcher.Action.DELETED) {
+            logger.info(">> Deleting App: " + resource?.metadata?.name)
+            // logger.info(application.toString())
+            // logger.info(application.metadata.labels.getOrDefault("affiliation","Did not find affiliation"))
+            // logger.info(application.spec)
+        }
+    }
+
+    override fun onClose(cause: KubernetesClientException?) {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 }
