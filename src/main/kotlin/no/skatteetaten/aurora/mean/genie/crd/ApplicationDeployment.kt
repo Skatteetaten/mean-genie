@@ -8,15 +8,6 @@ import no.skatteetaten.aurora.mean.genie.service.ApplicationDeploymentDeserializ
 
 @JsonDeserialize(using=ApplicationDeploymentDeserializer::class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-data class ApplicationDeployment(val spec: ApplicationDeploymentSpec? ) : CustomResource("ApplicationDeployment") {
-
-    // var spec: ApplicationDeploymentSpec? = null
-
-    override fun toString(): String {
-        return "Application{" +
-            "spec=" + spec +
-            '}'
-    }
-}
+data class ApplicationDeployment(val spec: ApplicationDeploymentSpec? ) : CustomResource()
 
 
