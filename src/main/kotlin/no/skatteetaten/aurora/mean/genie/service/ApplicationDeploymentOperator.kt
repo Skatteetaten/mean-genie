@@ -3,7 +3,6 @@ package no.skatteetaten.aurora.mean.genie.service
 import com.fasterxml.jackson.core.JsonParser
 import com.fasterxml.jackson.core.JsonProcessingException
 import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.databind.JsonDeserializer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
@@ -24,7 +23,7 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class ApplicationDeploymentOperator(
-        private val appCRDClient: NonNamespaceOperation<ApplicationDeployment, ApplicationDeploymentList, ApplicationDeploymentDoneable, Resource<ApplicationDeployment, ApplicationDeploymentDoneable>>? = null
+    private val appCRDClient: NonNamespaceOperation<ApplicationDeployment, ApplicationDeploymentList, ApplicationDeploymentDoneable, Resource<ApplicationDeployment, ApplicationDeploymentDoneable>>? = null
 ) {
 
     fun init(): Boolean {
@@ -34,7 +33,6 @@ class ApplicationDeploymentOperator(
         return true
     }
 }
-
 
 class ApplicationDeploymentWatcher : Watcher<ApplicationDeployment> {
     override fun eventReceived(action: Watcher.Action?, resource: ApplicationDeployment?) {
@@ -52,11 +50,13 @@ class ApplicationDeploymentWatcher : Watcher<ApplicationDeployment> {
     }
 }
 
-
 class ApplicationDeploymentDeserializer : JsonDeserializer<ApplicationDeployment>() {
 
     @Throws(IOException::class, JsonProcessingException::class)
-    override fun deserialize(jsonParser: JsonParser, deserializationContext: DeserializationContext): ApplicationDeployment {
+    override fun deserialize(
+        jsonParser: JsonParser,
+        deserializationContext: DeserializationContext
+    ): ApplicationDeployment {
         return objectMapper.readValue(jsonParser, ApplicationDeployment::class.java)
     }
 
@@ -68,13 +68,9 @@ class ApplicationDeploymentDeserializer : JsonDeserializer<ApplicationDeployment
         private val objectMapper = ObjectMapper()
 
         init {
-            val module = SimpleModule()
-            objectMapper.apply {
-                this.registerModule(module)
-                        .addMixIn(ApplicationDeployment::class.java, DefaultJsonDeserializer::class.java).registerKotlinModule()
-                this.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-            }
+            objectMapper.registerModule(SimpleModule())
+                .addMixIn(ApplicationDeployment::class.java, DefaultJsonDeserializer::class.java)
+                .registerKotlinModule()
         }
     }
-
 }
