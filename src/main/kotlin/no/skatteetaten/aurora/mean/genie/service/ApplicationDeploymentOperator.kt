@@ -26,13 +26,13 @@ class ApplicationDeploymentOperator(
 }
 
 class ApplicationDeploymentWatcher : Watcher<ApplicationDeployment> {
-    override fun eventReceived(action: Watcher.Action?, resource: ApplicationDeployment?) {
-        logger.info { resource }
+    override fun eventReceived(action: Watcher.Action, resource: ApplicationDeployment) {
+        logger.info { resource.spec }
         if (action == Watcher.Action.DELETED) {
-            logger.info(">> Deleting App: " + resource?.metadata?.name)
+            logger.info(">> Deleting App: " + resource.metadata.name)
             // logger.info(application.toString())
             // logger.info(application.metadata.labels.getOrDefault("affiliation","Did not find affiliation"))
-            logger.info { resource?.spec }
+            logger.info { resource.spec }
         }
     }
 
