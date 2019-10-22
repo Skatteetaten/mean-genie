@@ -12,5 +12,3 @@ class ApplicationDeployment : CustomResource() {
         return "ApplicationDeployment(spec=$spec)"
     }
 }
-
-

@@ -7,9 +7,9 @@ import io.fabric8.kubernetes.api.model.KubernetesResource
 @JsonDeserialize
 @JsonIgnoreProperties(ignoreUnknown = true)
 class ApplicationDeploymentSpec : KubernetesResource {
-    lateinit var applicationDeploymentId: String
-    lateinit var applicationDeploymentName: String
-    lateinit var databases: List<String>
+    var applicationDeploymentId: String = ""
+    var applicationDeploymentName: String = ""
+    var databases: List<String> = emptyList()
     override fun toString(): String {
         return "ApplicationDeploymentSpec(applicationDeploymentId='$applicationDeploymentId', applicationDeploymentName='$applicationDeploymentName', databases=$databases)"
     }
