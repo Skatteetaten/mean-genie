@@ -14,7 +14,6 @@ class ApplicationDeploymentTest {
         val applicationDeploymentSpec = ApplicationDeploymentSpec().apply {
             applicationDeploymentId = "123"
             applicationDeploymentName = "abc"
-            databases = listOf("DB1")
         }
         val applicationDeployment = ApplicationDeployment().apply {
             spec = applicationDeploymentSpec
