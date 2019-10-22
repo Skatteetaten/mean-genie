@@ -1,13 +1,5 @@
 package no.skatteetaten.aurora.mean.genie.service
 
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.core.JsonProcessingException
-import com.fasterxml.jackson.databind.DeserializationContext
-import com.fasterxml.jackson.databind.JsonDeserializer
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.databind.module.SimpleModule
-import com.fasterxml.jackson.module.kotlin.registerKotlinModule
 import io.fabric8.kubernetes.client.KubernetesClientException
 import io.fabric8.kubernetes.client.Watcher
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation
@@ -17,7 +9,6 @@ import no.skatteetaten.aurora.mean.genie.crd.ApplicationDeployment
 import no.skatteetaten.aurora.mean.genie.crd.ApplicationDeploymentDoneable
 import no.skatteetaten.aurora.mean.genie.crd.ApplicationDeploymentList
 import org.springframework.stereotype.Service
-import java.io.IOException
 
 private val logger = KotlinLogging.logger {}
 
@@ -47,30 +38,5 @@ class ApplicationDeploymentWatcher : Watcher<ApplicationDeployment> {
 
     override fun onClose(cause: KubernetesClientException?) {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
-}
-
-class ApplicationDeploymentDeserializer : JsonDeserializer<ApplicationDeployment>() {
-
-    @Throws(IOException::class, JsonProcessingException::class)
-    override fun deserialize(
-        jsonParser: JsonParser,
-        deserializationContext: DeserializationContext
-    ): ApplicationDeployment {
-        return objectMapper.readValue(jsonParser, ApplicationDeployment::class.java)
-    }
-
-    @JsonDeserialize
-    private interface DefaultJsonDeserializer// Reset default json deserializer
-
-    companion object {
-
-        private val objectMapper = ObjectMapper()
-
-        init {
-            objectMapper.registerModule(SimpleModule())
-                .addMixIn(ApplicationDeployment::class.java, DefaultJsonDeserializer::class.java)
-                .registerKotlinModule()
-        }
     }
 }
