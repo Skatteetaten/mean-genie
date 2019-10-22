@@ -15,11 +15,19 @@ class ApplicationDeploymentWatcherTest {
     @Test
     fun `deserialize watch event`() {
         ApplicationConfig()
-        val watchEvent =
-            WatchEvent(ApplicationDeployment(ApplicationDeploymentSpec("123", "abc", emptyList())), "ADDED")
-        val json = Serialization.asJson(watchEvent)
+        val applicationDeploymentSpec = ApplicationDeploymentSpec().apply {
+            applicationDeploymentId = "123"
+            applicationDeploymentName = "abc"
+            databases = listOf("DB1")
+        }
+        val applicationDeployment = ApplicationDeployment().apply {
+            spec = applicationDeploymentSpec
+        }
 
+        val watchEvent = WatchEvent(applicationDeployment, "ADDED")
+        val json = Serialization.asJson(watchEvent)
         val readValue = Serialization.jsonMapper().readValue<WatchEvent>(json)
+
         assertThat(readValue.type).isEqualTo("ADDED")
         assertThat(readValue.`object`).isInstanceOf(ApplicationDeployment::class)
     }

@@ -11,16 +11,16 @@ class ApplicationDeploymentTest {
     @Test
     fun `serialize and deserialize ApplicationDeployment`() {
         ApplicationConfig()
-        val applicationDeployment = ApplicationDeployment(
-            spec = ApplicationDeploymentSpec(
-                applicationDeploymentId = "123",
-                applicationDeploymentName = "test",
-                databases = emptyList()
-            )
-        )
+        val applicationDeploymentSpec = ApplicationDeploymentSpec().apply {
+            applicationDeploymentId = "123"
+            applicationDeploymentName = "abc"
+            databases = listOf("DB1")
+        }
+        val applicationDeployment = ApplicationDeployment().apply {
+            spec = applicationDeploymentSpec
+        }
         val json = Serialization.jsonMapper().writeValueAsString(applicationDeployment)
-        println(json)
         val result = Serialization.jsonMapper().readValue<ApplicationDeployment>(json)
-        assertThat(result.spec?.applicationDeploymentId).isEqualTo("123")
+        assertThat(result.spec.applicationDeploymentId).isEqualTo("123")
     }
 }
