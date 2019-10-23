@@ -1,22 +1,26 @@
 package no.skatteetaten.aurora.mean.genie
 
 import mu.KotlinLogging
-import no.skatteetaten.aurora.mean.genie.service.ApplicationDeploymentOperator
+import no.skatteetaten.aurora.mean.genie.model.ApplicationDeployment
+import no.skatteetaten.aurora.mean.genie.service.KubernetesWatcher
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 
-@SpringBootApplication
-class Main(val appsOperator: ApplicationDeploymentOperator) : CommandLineRunner {
-    private val logger = KotlinLogging.logger {}
+private val logger = KotlinLogging.logger {}
 
-    private var initDone = false
+@SpringBootApplication
+class Main(val watcher: KubernetesWatcher) : CommandLineRunner {
 
     @Throws(Exception::class)
     override fun run(vararg args: String) {
 
-        initDone = appsOperator.init()
-            logger.info("> App Service Init.")
+        val url = "/apis/skatteetaten.no/v1/applicationdeployments?watch=true&labelSelector=affiliation=aurora"
+        watcher.watch<ApplicationDeployment>(url) {
+            if (it.type == "DELETED") {
+                logger.info("{}", it)
+            }
+        }
     }
 }
 fun main(args: Array<String>) {

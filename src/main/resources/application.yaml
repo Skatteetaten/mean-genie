@@ -12,6 +12,15 @@ logging:
                 catalina: WARN
                 velocity: WARN
 
+server:
+    tomcat:
+        mbeanregistry:
+            enabled: true
+
+integrations:
+    openshift:
+        tokenLocation: file:/var/run/secrets/kubernetes.io/serviceaccount/token
+        url: https://${openshift.cluster}-master.paas.skead.no:8443
 ---
 spring:
     profiles: local
@@ -22,6 +31,12 @@ mean-genie:
     delete:
         resources: false
 
+openshift:
+    cluster: qa
+
+integrations:
+    openshift:
+        tokenLocation: file:/tmp/reader-token
 
 logging:
     pattern:
