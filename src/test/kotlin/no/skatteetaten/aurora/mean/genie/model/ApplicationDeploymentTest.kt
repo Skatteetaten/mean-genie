@@ -2,9 +2,9 @@ package no.skatteetaten.aurora.mean.genie.model
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.fabric8.kubernetes.api.model.ObjectMeta
-import io.fabric8.kubernetes.client.utils.Serialization
 import no.skatteetaten.aurora.mean.genie.ApplicationConfig
 import org.junit.jupiter.api.Test
 
@@ -14,8 +14,8 @@ class ApplicationDeploymentTest {
         ApplicationConfig()
 
         val applicationDeployment = ApplicationDeployment(ApplicationDeploymentSpec("123", "abc"), ObjectMeta())
-        val json = Serialization.jsonMapper().writeValueAsString(applicationDeployment)
-        val result = Serialization.jsonMapper().readValue<ApplicationDeployment>(json)
+        val json = ObjectMapper().writeValueAsString(applicationDeployment)
+        val result = ObjectMapper().readValue<ApplicationDeployment>(json)
         assertThat(result.spec.applicationDeploymentId).isEqualTo("123")
     }
 }
