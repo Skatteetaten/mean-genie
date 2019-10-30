@@ -1,10 +1,13 @@
 package no.skatteetaten.aurora.mean.genie.service
 
 import assertk.assertThat
+import assertk.assertions.isEqualTo
+import assertk.assertions.isInstanceOf
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.fabric8.kubernetes.api.model.ObjectMeta
 import no.skatteetaten.aurora.mean.genie.ApplicationConfig
+import no.skatteetaten.aurora.mean.genie.kubernetesObjectMapper
 import no.skatteetaten.aurora.mean.genie.model.ApplicationDeployment
 import no.skatteetaten.aurora.mean.genie.model.ApplicationDeploymentSpec
 import no.skatteetaten.aurora.mean.genie.model.WatchEvent
@@ -13,19 +16,17 @@ import org.junit.jupiter.api.Test
 class ApplicationDeploymentWatcherTest {
     @Test
     fun `deserialize watch event`() {
-        ApplicationConfig()
-
-        val watchEvent = WatchEvent<ApplicationDeployment>(
+        val watchEvent = WatchEvent(
             "DELETED",
             ApplicationDeployment(ApplicationDeploymentSpec("123", "abc"), ObjectMeta())
         )
 
-        val json = ObjectMapper().writeValueAsString(watchEvent)
+        val json = kubernetesObjectMapper().writeValueAsString(watchEvent)
         println(json)
-        val readValue = ObjectMapper().readValue<WatchEvent>(json)
-        println(readValue)
+        val recievedEvent = kubernetesObjectMapper().readValue<WatchEvent<ApplicationDeployment>>(json)
+        println(recievedEvent)
 
-        assertThat(readValue.type).isEqualTo("ADDED")
-        assertThat(readValue.`object`).isInstanceOf(ApplicationDeployment::class)
+        assertThat(recievedEvent.type).isEqualTo("DELETED")
+        assertThat(recievedEvent.resource).isInstanceOf(ApplicationDeployment::class)
     }
 }

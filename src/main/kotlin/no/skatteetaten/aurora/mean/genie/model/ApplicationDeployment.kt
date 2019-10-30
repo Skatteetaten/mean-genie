@@ -41,12 +41,14 @@ data class ApplicationDeployment(
     }
 }
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class WatchEvent<T>(
     val type: String,
     @JsonProperty("object")
     val resource: T
 )
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 data class ApplicationDeploymentSpec(
     val applicationDeploymentId: String = "",
     val applicationDeploymentName: String = "",

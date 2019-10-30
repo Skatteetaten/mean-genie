@@ -1,10 +1,12 @@
 spring:
     profiles:
         active: local
+    application:
+        name: mean-genie
 
 logging:
     level:
-        no.skatteetaten.aurora.mean.genie: INFO
+        no.skatteetaten.aurora.mean.genie: DEBUG
         org:
             hibernate: WARN
             springframework: WARN
@@ -21,6 +23,8 @@ integrations:
     openshift:
         tokenLocation: file:/var/run/secrets/kubernetes.io/serviceaccount/token
         url: https://${openshift.cluster}-master.paas.skead.no:8443
+    dbh:
+        url: "http://dbh"
 ---
 spring:
     profiles: local
@@ -43,6 +47,7 @@ logging:
         console: "%d [%-9.9thread] %highlight(%-5level) %cyan(%logger:%L) %X - %msg %n%rEx{full}"
     # add mokey.openshift.token to ~/.spring-boot-devtools.properties
 
+aurora.token.value: token
 
 ---
 spring:
