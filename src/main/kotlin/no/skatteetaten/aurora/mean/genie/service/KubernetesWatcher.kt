@@ -1,12 +1,12 @@
 package no.skatteetaten.aurora.mean.genie.service
 
 import com.fasterxml.jackson.databind.JsonNode
-import java.net.URI
 import mu.KotlinLogging
 import no.skatteetaten.aurora.mean.genie.kubernetesObjectMapper
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient
 import reactor.core.publisher.Mono
+import java.net.URI
 
 private val logger = KotlinLogging.logger {}
 
@@ -32,7 +32,7 @@ class KubernetesWatcher(val websocketCLient: ReactorNettyWebSocketClient) {
                         logger.debug("{}", it)
                         // ta vare på siste og bruk den når vi starter opp igjen
                         // it.resource.metadata.resourceVersion, kanskje unødvendig når vi reagerer på delete handlinger
-                         fn(it)
+                        fn(it)
                     }.then()
             }
                 .block()

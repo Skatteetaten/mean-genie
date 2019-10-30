@@ -3,10 +3,8 @@ package no.skatteetaten.aurora.mean.genie.service
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isInstanceOf
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.fabric8.kubernetes.api.model.ObjectMeta
-import no.skatteetaten.aurora.mean.genie.ApplicationConfig
 import no.skatteetaten.aurora.mean.genie.kubernetesObjectMapper
 import no.skatteetaten.aurora.mean.genie.model.ApplicationDeployment
 import no.skatteetaten.aurora.mean.genie.model.ApplicationDeploymentSpec
