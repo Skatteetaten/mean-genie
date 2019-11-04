@@ -13,32 +13,31 @@ private val logger = KotlinLogging.logger {}
 @Service
 class KubernetesWatcher(val websocketCLient: ReactorNettyWebSocketClient) {
 
-    // TODO: create url from T
-    fun watch(url: String, types: List<String> = emptyList(), fn: (JsonNode) -> Mono<Void>) {
+    tailrec fun watch(url: String, types: List<String> = emptyList(), fn: (JsonNode) -> Mono<Void>) {
+        logger.info("Started watch on url={}", url)
         try {
             websocketCLient.execute(
                 URI.create(url)
             ) { session ->
-                session.receive()
-                    .map {
-                        kubernetesObjectMapper().readTree(it.payloadAsText)
-                    }.filter {
+                session
+                    .receive()
+                    .map { kubernetesObjectMapper().readTree(it.payloadAsText) }
+                    .filter {
                         if (types.isEmpty()) {
                             true
                         } else {
                             it.at("/type").textValue() in types
                         }
                     }.flatMap {
-                        logger.debug("{}", it)
-                        // ta vare på siste og bruk den når vi starter opp igjen
-                        // it.resource.metadata.resourceVersion, kanskje unødvendig når vi reagerer på delete handlinger
                         fn(it)
                     }.then()
             }
                 .block()
         } catch (e: Throwable) {
-            logger.info("watcher restarted", e)
-            watch(url, types, fn)
+            logger.info("error occured in watch", e)
+        } finally {
+            logger.info("watcher restarted")
         }
+        watch(url, types, fn)
     }
 }

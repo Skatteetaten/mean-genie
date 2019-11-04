@@ -8,14 +8,6 @@ import io.netty.channel.ChannelOption
 import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.timeout.ReadTimeoutHandler
 import io.netty.handler.timeout.WriteTimeoutHandler
-import java.io.FileInputStream
-import java.nio.charset.StandardCharsets
-import java.security.KeyStore
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
-import java.util.UUID
-import java.util.concurrent.TimeUnit
-import javax.net.ssl.TrustManagerFactory
 import no.skatteetaten.aurora.filter.logging.AuroraHeaderFilter
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -27,18 +19,23 @@ import org.springframework.core.io.Resource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
-import org.springframework.http.codec.json.Jackson2JsonDecoder
-import org.springframework.http.codec.json.Jackson2JsonEncoder
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint
 import org.springframework.util.StreamUtils
-import org.springframework.web.reactive.function.client.ExchangeStrategies
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient
 import reactor.netty.http.client.HttpClient
 import reactor.netty.tcp.SslProvider
 import reactor.netty.tcp.TcpClient
+import java.io.FileInputStream
+import java.nio.charset.StandardCharsets
+import java.security.KeyStore
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
+import java.util.UUID
+import java.util.concurrent.TimeUnit
+import javax.net.ssl.TrustManagerFactory
 
 @JsonDeserialize
 interface DefaultJsonDeserializer
@@ -93,24 +90,12 @@ class ApplicationConfig(
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .defaultHeader(HEADER_KLIENTID, applicationName)
             .defaultHeader(AuroraHeaderFilter.KORRELASJONS_ID, UUID.randomUUID().toString())
-            // .exchangeStrategies(exchangeStrategies())
             .clientConnector(
                 ReactorClientHttpConnector(
                     HttpClient.from(tcpClient)
                         .compress(true)
                 )
             ).build()
-
-    private fun exchangeStrategies(): ExchangeStrategies {
-        val objectMapper = jacksonObjectMapper()
-        return ExchangeStrategies
-            .builder()
-            .codecs {
-                it.defaultCodecs().jackson2JsonDecoder(Jackson2JsonDecoder(objectMapper, MediaType.APPLICATION_JSON))
-                it.defaultCodecs().jackson2JsonEncoder(Jackson2JsonEncoder(objectMapper, MediaType.APPLICATION_JSON))
-            }
-            .build()
-    }
 
     @Bean
     @Qualifier("openshift")

@@ -23,8 +23,6 @@ integrations:
     openshift:
         tokenLocation: file:/var/run/secrets/kubernetes.io/serviceaccount/token
         url: https://${openshift.cluster}-master.paas.skead.no:8443
-    dbh:
-        url: "http://dbh"
 ---
 spring:
     profiles: local
@@ -41,6 +39,8 @@ openshift:
 integrations:
     openshift:
         tokenLocation: file:/tmp/reader-token
+    dbh:
+        url: "http://dbh-aurora.qa.paas.skead.no"
 
 logging:
     pattern:
@@ -48,6 +48,9 @@ logging:
     # add mokey.openshift.token to ~/.spring-boot-devtools.properties
 
 aurora.token.value: token
+
+operation:
+    scope: "dev"
 
 ---
 spring:
