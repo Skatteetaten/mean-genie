@@ -14,7 +14,7 @@ private val logger = KotlinLogging.logger {}
 class KubernetesWatcher(val websocketCLient: ReactorNettyWebSocketClient) {
 
     tailrec fun watch(url: String, types: List<String> = emptyList(), fn: (JsonNode) -> Mono<Void>) {
-        logger.info("Started watch on url={}", url)
+        logger.debug("Started watch on url={}", url)
         try {
             websocketCLient.execute(
                 URI.create(url)
@@ -34,9 +34,9 @@ class KubernetesWatcher(val websocketCLient: ReactorNettyWebSocketClient) {
             }
                 .block()
         } catch (e: Throwable) {
-            logger.info("error occured in watch", e)
+            logger.error("error occured in watch", e)
         } finally {
-            logger.info("watcher restarted")
+            logger.debug("watcher restarted")
         }
         watch(url, types, fn)
     }

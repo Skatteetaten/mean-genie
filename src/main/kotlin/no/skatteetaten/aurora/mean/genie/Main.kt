@@ -26,13 +26,11 @@ class Main(
         val url = "/apis/skatteetaten.no/v1/applicationdeployments?watch=true"
         watcher.watch(url, listOf("DELETED")) {
             val operationScopeLabel = databaseService.readOperationScopeLabel(it)
-            logger.info(operationScopeLabel)
-            logger.info(operationScopeConfiguration)
             val databases = databaseService.readDatabaseLabel(it)
 
             if (operationScopeLabel == operationScopeConfiguration && databases.isNotEmpty()) {
                 databaseService.deleteSchemaByID(databases).then()
-                logger.info { "Deleted schema $databases" }
+                logger.debug { "Deleted schema $databases" }
             }
             Mono.empty()
         }
