@@ -30,5 +30,5 @@ We use a local repository for distributionUrl in our gradle-wrapper.properties, 
 ## How it works  
 Deploy Mean-genie in the cluster you want it to listen to and it will by default put database schemas in cooldown when an ApplicationDeployment is deleted.
 
-Mean-genie can be customized to only act on spesific events by setting the environment variable OPERATION_SCOPE to a certain value. 
-If OPERATION_SCOPE is set in the Mean-genie to `foo` then it will only act on delete events for ApplicationDeployments with the same label `foo`.
+Mean-genie can be customized to only act on spesific events by setting the environment variable `OPERATION_SCOPE` to a certain value. 
+If `OPERATION_SCOPE` is set in the Mean-genie to `foo` then it will only act on delete events for ApplicationDeployments with the same label `foo`.
