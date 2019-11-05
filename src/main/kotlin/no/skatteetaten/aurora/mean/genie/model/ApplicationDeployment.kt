@@ -19,7 +19,7 @@ data class ApplicationDeployment(
     val _kind: String = "ApplicationDeployment",
     @JsonIgnore
     var _apiVersion: String = "skatteetaten.no/v1"
-) : HasMetadata { // or just KubernetesResource?
+) : HasMetadata {
     override fun getMetadata(): ObjectMeta {
         return _metadata ?: ObjectMeta()
     }
