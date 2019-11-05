@@ -8,8 +8,8 @@ import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.event.ContextClosedEvent
-import reactor.core.publisher.Mono
 import org.springframework.context.event.EventListener
+import reactor.core.publisher.Mono
 
 private val logger = KotlinLogging.logger {}
 
