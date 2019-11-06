@@ -1,9 +1,9 @@
 package no.skatteetaten.aurora.mean.genie.service
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import java.net.URI
 import mu.KotlinLogging
-import no.skatteetaten.aurora.mean.genie.kubernetesObjectMapper
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient
 import reactor.core.publisher.Mono
@@ -21,7 +21,7 @@ class KubernetesWatcher(val websocketCLient: ReactorNettyWebSocketClient) {
             ) { session ->
                 session
                     .receive()
-                    .map { kubernetesObjectMapper().readTree(it.payloadAsText) }
+                    .map { jacksonObjectMapper().readTree(it.payloadAsText) }
                     .filter {
                         if (types.isEmpty()) {
                             true

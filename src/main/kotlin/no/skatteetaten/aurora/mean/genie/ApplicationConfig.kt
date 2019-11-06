@@ -1,9 +1,5 @@
 package no.skatteetaten.aurora.mean.genie
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.fabric8.kubernetes.api.model.KubernetesResource
 import io.netty.channel.ChannelOption
 import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.timeout.ReadTimeoutHandler
@@ -36,12 +32,6 @@ import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClien
 import reactor.netty.http.client.HttpClient
 import reactor.netty.tcp.SslProvider
 import reactor.netty.tcp.TcpClient
-
-@JsonDeserialize
-interface DefaultJsonDeserializer
-
-fun kubernetesObjectMapper(): ObjectMapper =
-    jacksonObjectMapper().addMixIn(KubernetesResource::class.java, DefaultJsonDeserializer::class.java)
 
 const val HEADER_KLIENTID = "KlientID"
 

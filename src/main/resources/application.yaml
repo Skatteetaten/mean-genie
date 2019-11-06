@@ -41,6 +41,8 @@ integrations:
         tokenLocation: file:/tmp/reader-token
     dbh:
         url: "http://dbh-aurora.qa.paas.skead.no"
+    operations:
+        scope: "dev"
 
 logging:
     pattern:
@@ -48,9 +50,6 @@ logging:
     # add mokey.openshift.token to ~/.spring-boot-devtools.properties
 
 aurora.token.value: token
-
-operation:
-    scope: "dev"
 
 ---
 spring:

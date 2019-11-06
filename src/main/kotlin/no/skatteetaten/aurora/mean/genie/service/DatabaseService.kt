@@ -1,11 +1,7 @@
 package no.skatteetaten.aurora.mean.genie.service
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.module.kotlin.convertValue
 import no.skatteetaten.aurora.mean.genie.controller.security.SharedSecretReader
-import no.skatteetaten.aurora.mean.genie.kubernetesObjectMapper
-import no.skatteetaten.aurora.mean.genie.model.ApplicationDeployment
-import no.skatteetaten.aurora.mean.genie.model.WatchEvent
 import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
@@ -26,12 +22,4 @@ class DatabaseService(val webClient: WebClient, val sharedSecretReader: SharedSe
                 .bodyToMono<JsonNode>()
         }
     }
-
-    private fun readWatchEventResource(json: JsonNode): ApplicationDeployment =
-        kubernetesObjectMapper().convertValue<WatchEvent<ApplicationDeployment>>(json).resource
-
-    fun readDatabaseLabel(json: JsonNode): List<String> = readWatchEventResource(json).spec.databases
-
-    fun readOperationScopeLabel(json: JsonNode): String? =
-        readWatchEventResource(json).metadata.labels["operationScope"]
 }
