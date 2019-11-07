@@ -28,8 +28,6 @@ spring:
     profiles: local
 
 mean-genie:
-    username: mean-genie
-    password: mean-genie
     delete:
         resources: false
 

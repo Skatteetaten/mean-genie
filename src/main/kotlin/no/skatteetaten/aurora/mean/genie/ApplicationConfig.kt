@@ -23,9 +23,7 @@ import org.springframework.core.io.Resource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.client.reactive.ReactorClientHttpConnector
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import org.springframework.security.crypto.password.PasswordEncoder
-import org.springframework.security.web.authentication.www.BasicAuthenticationEntryPoint
+import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.util.StreamUtils
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient
@@ -36,21 +34,10 @@ import reactor.netty.tcp.TcpClient
 const val HEADER_KLIENTID = "KlientID"
 
 @Configuration
+@EnableAsync
 class ApplicationConfig(
     @Value("\${spring.application.name}") val applicationName: String
 ) : BeanPostProcessor {
-
-    @Bean
-    fun passwordEncoder(): PasswordEncoder {
-        return BCryptPasswordEncoder()
-    }
-
-    @Bean
-    fun basic(): BasicAuthenticationEntryPoint {
-        return BasicAuthenticationEntryPoint().also {
-            it.realmName = "MEAN-GENIE"
-        }
-    }
 
     @Bean
     fun websocketClient(
@@ -63,7 +50,7 @@ class ApplicationConfig(
                 .baseUrl(openshiftUrl)
                 .headers {
                     it.add(HttpHeaders.AUTHORIZATION, "Bearer ${token.readContent()}")
-                    it.add("User-Agent", "Mean-Genie")
+                    it.add("User-Agent", applicationName)
                 }
         )
     }
@@ -71,8 +58,7 @@ class ApplicationConfig(
     @Bean
     fun webClientDbh(
         @Qualifier("dbh") tcpClient: TcpClient,
-        @Value("\${integrations.dbh.url}") dbhUrl: String,
-        @Value("\${integrations.openshift.tokenLocation:file:/var/run/secrets/kubernetes.io/serviceaccount/token}") token: Resource
+        @Value("\${integrations.dbh.url}") dbhUrl: String
     ): WebClient =
         WebClient
             .builder()
@@ -136,7 +122,7 @@ class ApplicationConfig(
 
     @Profile("openshift")
     @Bean
-    fun openshiftSSLContext(@Value("\${trust.store}") trustStoreLocation: String): KeyStore? =
+    fun openshiftSSLContext(@Value("\${trust.store}") trustStoreLocation: String): KeyStore =
         KeyStore.getInstance(KeyStore.getDefaultType())?.let { ks ->
             ks.load(FileInputStream(trustStoreLocation), "changeit".toCharArray())
             val fis = FileInputStream("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
@@ -144,7 +130,7 @@ class ApplicationConfig(
                 ks.setCertificateEntry((it as X509Certificate).subjectX500Principal.name, it)
             }
             ks
-        }
+        } ?: throw Exception("KeyStore getInstance did not return KeyStore")
 }
 
 fun Resource.readContent() = StreamUtils.copyToString(this.inputStream, StandardCharsets.UTF_8)

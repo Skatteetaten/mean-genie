@@ -13,31 +13,36 @@ private val logger = KotlinLogging.logger {}
 @Service
 class KubernetesWatcher(val websocketCLient: ReactorNettyWebSocketClient) {
 
-    tailrec fun watch(url: String, types: List<String> = emptyList(), fn: (JsonNode) -> Mono<Void>) {
-        logger.debug("Started watch on url={}", url)
-        try {
-            websocketCLient.execute(
-                URI.create(url)
-            ) { session ->
-                session
-                    .receive()
-                    .map { jacksonObjectMapper().readTree(it.payloadAsText) }
-                    .filter {
-                        if (types.isEmpty()) {
-                            true
-                        } else {
-                            it.at("/type").textValue() in types
-                        }
-                    }.flatMap {
-                        fn(it)
-                    }.then()
+    fun watch(url: String, types: List<String> = emptyList(), fn: (JsonNode) -> Any) {
+        var stopped = false
+        while (!stopped) {
+            logger.debug("Started watch on url={}", url)
+            try {
+                watchBlocking(url, types, fn)
+            } catch (e: Throwable) {
+                when (e.cause) {
+                    is InterruptedException -> stopped = true
+                    else -> logger.error("error occured in watch", e)
+                }
             }
-                .block()
-        } catch (e: Throwable) {
-            logger.error("error occured in watch", e)
-        } finally {
-            logger.debug("watcher restarted")
         }
-        watch(url, types, fn)
+    }
+
+    private fun watchBlocking(url: String, types: List<String>, fn: (JsonNode) -> Any) {
+        websocketCLient.execute(URI.create(url)) { session ->
+            session
+                .receive()
+                .map { jacksonObjectMapper().readTree(it.payloadAsText) }
+                .filter {
+                    if (types.isEmpty()) {
+                        true
+                    } else {
+                        it.at("/type").textValue() in types
+                    }
+                }.flatMap {
+                    fn(it)
+                    Mono.empty<Void>()
+                }.then()
+        }.block()
     }
 }

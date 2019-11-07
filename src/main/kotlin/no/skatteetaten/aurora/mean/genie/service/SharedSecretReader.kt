@@ -1,4 +1,4 @@
-package no.skatteetaten.aurora.mean.genie.controller.security
+package no.skatteetaten.aurora.mean.genie.service
 
 import java.io.File
 import java.io.IOException
