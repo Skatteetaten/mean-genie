@@ -8,14 +8,13 @@ import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.kotlin.core.publisher.toFlux
 
 @Service
-class DatabaseService(val webClient: WebClient, val sharedSecretReader: SharedSecretReader) {
+class DatabaseService(val webClient: WebClient) {
 
     fun deleteSchemaByID(databases: List<String>) {
         databases.toFlux().flatMap { databaseId ->
             webClient
                 .delete()
                 .uri("/api/v1/schema/$databaseId")
-                .header(HttpHeaders.AUTHORIZATION, "aurora-token ${sharedSecretReader.secret}")
                 .retrieve()
                 .bodyToMono<JsonNode>()
         }

@@ -4,15 +4,8 @@ import io.netty.channel.ChannelOption
 import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.timeout.ReadTimeoutHandler
 import io.netty.handler.timeout.WriteTimeoutHandler
-import java.io.FileInputStream
-import java.nio.charset.StandardCharsets
-import java.security.KeyStore
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
-import java.util.UUID
-import java.util.concurrent.TimeUnit
-import javax.net.ssl.TrustManagerFactory
 import no.skatteetaten.aurora.filter.logging.AuroraHeaderFilter
+import no.skatteetaten.aurora.mean.genie.service.SharedSecretReader
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.beans.factory.config.BeanPostProcessor
@@ -30,13 +23,22 @@ import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClien
 import reactor.netty.http.client.HttpClient
 import reactor.netty.tcp.SslProvider
 import reactor.netty.tcp.TcpClient
+import java.io.FileInputStream
+import java.nio.charset.StandardCharsets
+import java.security.KeyStore
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
+import java.util.UUID
+import java.util.concurrent.TimeUnit
+import javax.net.ssl.TrustManagerFactory
 
 const val HEADER_KLIENTID = "KlientID"
 
 @Configuration
 @EnableAsync
 class ApplicationConfig(
-    @Value("\${spring.application.name}") val applicationName: String
+    @Value("\${spring.application.name}") val applicationName: String,
+    val sharedSecretReader: SharedSecretReader
 ) : BeanPostProcessor {
 
     @Bean
@@ -66,6 +68,7 @@ class ApplicationConfig(
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .defaultHeader(HEADER_KLIENTID, applicationName)
             .defaultHeader(AuroraHeaderFilter.KORRELASJONS_ID, UUID.randomUUID().toString())
+            .defaultHeader(HttpHeaders.AUTHORIZATION, "aurora-token ${sharedSecretReader.secret}")
             .clientConnector(
                 ReactorClientHttpConnector(
                     HttpClient.from(tcpClient)
