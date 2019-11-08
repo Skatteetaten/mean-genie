@@ -5,6 +5,7 @@ import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
+import reactor.core.publisher.Mono
 
 private val logger = KotlinLogging.logger {}
 
@@ -26,9 +27,12 @@ class ApplicationDeploymentWatcherService(
             val jsonArray = event.at("/object/spec/databases") as ArrayNode
             val databases = jsonArray.map { it.textValue() }
 
-            if (databases.isNotEmpty()) {
+            if (databases.isEmpty()) {
+                Mono.empty()
+            } else {
+                logger.debug { "Attempting to delete database schema $databases" }
                 databaseService.deleteSchemaByID(databases)
-                logger.debug { "Deleted schema $databases" }
+                    .then()
             }
         }
     }

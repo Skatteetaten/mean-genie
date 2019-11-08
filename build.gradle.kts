@@ -15,7 +15,6 @@ plugins {
 
 dependencies {
     implementation("com.fkorotkov:kubernetes-dsl:3.0")
-
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.0.0.RELEASE")
