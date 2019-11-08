@@ -17,6 +17,7 @@ class DatabaseService(val webClient: WebClient) {
                 .uri("/api/v1/schema/$databaseId")
                 .retrieve()
                 .bodyToMono<JsonNode>()
+                .log()
         }
     }
 }
