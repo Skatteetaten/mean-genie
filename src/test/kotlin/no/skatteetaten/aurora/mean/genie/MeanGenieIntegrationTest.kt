@@ -3,6 +3,7 @@ package no.skatteetaten.aurora.mean.genie
 import assertk.Assert
 import assertk.assertThat
 import assertk.assertions.support.expected
+import java.util.concurrent.TimeUnit
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
@@ -17,7 +18,6 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
-import java.util.concurrent.TimeUnit
 
 @SpringBootTest
 class MeanGenieIntegrationTest {
