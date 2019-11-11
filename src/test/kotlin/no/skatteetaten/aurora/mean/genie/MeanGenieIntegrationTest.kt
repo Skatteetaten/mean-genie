@@ -53,8 +53,8 @@ class MeanGenieIntegrationTest {
 
     @Test
     fun `Received deleted event and call dbh`() {
-        await untilNotNull { openshiftListener.webSocket }
-        openshiftListener.webSocket?.send(""" { "type":"DELETED", "object": { "spec": { "databases": ["123", "234"] } } } """)
+        val webSocket = await untilNotNull { openshiftListener.webSocket }
+        webSocket.send(""" { "type":"DELETED", "object": { "spec": { "databases": ["123", "234"] } } } """)
 
         val request1 = dbh.takeRequest(1, TimeUnit.SECONDS)
         assertThat(request1).deleteRequest("/api/v1/schema/123")
