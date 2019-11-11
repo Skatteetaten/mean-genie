@@ -4,13 +4,10 @@ import org.junit.Test
 
 class KubernetesWatcherTest {
     @Test
-    fun `Restart watcher when ` () {
-
+    fun `Restart watcher when `() {
     }
 
     @Test
-    fun `Watch blokking ` () {
-
+    fun `Watch blokking `() {
     }
-
 }

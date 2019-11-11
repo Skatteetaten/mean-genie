@@ -33,6 +33,6 @@ class DatabaseServiceTest {
             val jsonResponse = databaseService.deleteSchemaByID(listOf("123")).blockFirst()
             assertThat(jsonResponse).isNotNull()
         }
-        logger.info{request.first()?.headers}
+        logger.info { request.first()?.headers }
     }
 }

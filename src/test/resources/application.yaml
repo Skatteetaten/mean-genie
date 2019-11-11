@@ -14,3 +14,18 @@ logging:
 management:
     server:
         port: -1
+
+integrations:
+    openshift:
+        url: http://localhost:8081
+        tokenLocation: classpath:/test-token.txt
+    dbh:
+        url: http://localhost:8082
+
+aurora:
+    token:
+        value: test-token
+
+meangenie:
+    username: username
+    password: password

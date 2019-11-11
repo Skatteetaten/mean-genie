@@ -7,6 +7,7 @@ import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient
 import reactor.core.publisher.Mono
+import reactor.netty.http.client.PrematureCloseException
 
 private val logger = KotlinLogging.logger {}
 
@@ -21,7 +22,8 @@ class KubernetesWatcher(val websocketClient: ReactorNettyWebSocketClient) {
                 watchBlocking(url, types, fn)
             } catch (e: Throwable) {
                 when (e.cause) {
-                    is InterruptedException -> stopped = true
+                    // TODO Hvilke type exceptions kan skje her? Lagt til PrematureCloseException pga testing, men er dette riktig?
+                    is InterruptedException, is PrematureCloseException -> stopped = true
                     else -> logger.error("error occured in watch", e)
                 }
             }

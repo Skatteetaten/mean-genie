@@ -20,7 +20,7 @@ class ApplicationDeploymentWatcherService(
     fun watch() {
         val labelSelector = checkForOperationScopeLabel()
         val url = "/apis/skatteetaten.no/v1/applicationdeployments?watch=true&labelSelector=$labelSelector"
-        watcher.watch(url, listOf("DELETED")) {event ->
+        watcher.watch(url, listOf("DELETED")) { event ->
             deleteSchemasIfExists(event)
         }
     }

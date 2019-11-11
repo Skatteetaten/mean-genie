@@ -25,4 +25,5 @@ dependencies {
     testImplementation("com.nhaarman:mockito-kotlin:1.6.0")
     testImplementation("no.skatteetaten.aurora:mockmvc-extensions-kotlin:1.0.2")
     testImplementation("io.projectreactor:reactor-test:3.3.0.RELEASE")
+    testImplementation("org.awaitility:awaitility-kotlin:4.0.1")
 }
