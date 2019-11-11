@@ -64,6 +64,6 @@ class MeanGenieIntegrationTest {
 
     private fun Assert<RecordedRequest>.deleteRequest(path: String) = given {
         if (it.path == path && it.method == HttpMethod.DELETE.name) return
-        expected("DELETE request with path $path but was ${it.path}")
+        expected("DELETE request with path $path but was ${it.method} ${it.path}")
     }
 }
