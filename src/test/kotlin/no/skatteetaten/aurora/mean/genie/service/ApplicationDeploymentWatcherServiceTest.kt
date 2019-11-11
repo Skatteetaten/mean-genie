@@ -2,12 +2,16 @@ package no.skatteetaten.aurora.mean.genie.service
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.mockk
+import io.mockk.verify
 import org.junit.Test
+import java.time.Duration
 
 class ApplicationDeploymentWatcherServiceTest {
 
-    private val databaseService = mockk<DatabaseService>()
+    private val databaseService = mockk<DatabaseService>(relaxed = true)
     private val kubernetesWatcher = mockk<KubernetesWatcher>()
 
     private val applicationDeploymentWatcherService =
@@ -25,5 +29,14 @@ class ApplicationDeploymentWatcherServiceTest {
             ApplicationDeploymentWatcherService("dev", kubernetesWatcher, databaseService)
         val operationScope = applicationDeploymentWatcherServiceWithOperationScope.checkForOperationScopeLabel()
         assertThat(operationScope).isEqualTo("operationScope=dev")
+    }
+
+    @Test
+    fun `Set database to cooldown if found`() {
+        val json = """{"object": {"spec": {"databases": ["123","234"] } } }"""
+        val jsonNode = jacksonObjectMapper().readTree(json)
+        val response = applicationDeploymentWatcherService.deleteSchemasIfExists(jsonNode)
+        response.block(Duration.ofSeconds(3))
+        verify { databaseService.deleteSchemaByID(listOf("123","234")) }
     }
 }

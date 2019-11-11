@@ -12,7 +12,7 @@ private val logger = KotlinLogging.logger {}
 
 @Service
 class ApplicationDeploymentWatcherService(
-    @Value("\${integrations.operations.scope:#{null}}") val operationScopeConfiguration: String?,
+    @Value("\${integrations.operations.scope:}") val operationScopeConfiguration: String?,
     val watcher: KubernetesWatcher,
     val databaseService: DatabaseService
 ) {
@@ -20,7 +20,7 @@ class ApplicationDeploymentWatcherService(
     fun watch() {
         val labelSelector = checkForOperationScopeLabel()
         val url = "/apis/skatteetaten.no/v1/applicationdeployments?watch=true&labelSelector=$labelSelector"
-        watcher.watch(url, listOf("DELETED")) { event ->
+        watcher.watch(url, listOf("DELETED")) {event ->
             deleteSchemasIfExists(event)
         }
     }
