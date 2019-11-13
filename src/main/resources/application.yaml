@@ -1,34 +1,50 @@
 spring:
     profiles:
         active: local
+    application:
+        name: mean-genie
 
 logging:
-  level:
-    no.skatteetaten.aurora.mean.genie: INFO
-    org:
-      hibernate: WARN
-      springframework: WARN
-      apache:
-        catalina: WARN
-        velocity: WARN
+    level:
+        no.skatteetaten.aurora.mean.genie: INFO
+        org:
+            hibernate: WARN
+            springframework: WARN
+            apache:
+                catalina: WARN
+                velocity: WARN
 
+server:
+    tomcat:
+        mbeanregistry:
+            enabled: true
+
+integrations:
+    openshift:
+        tokenLocation: file:/var/run/secrets/kubernetes.io/serviceaccount/token
+        url: https://${openshift.cluster}-master.paas.skead.no:8443
 ---
 spring:
     profiles: local
 
-mean-genie:
-    username: mean-genie
-    password: mean-genie
-    delete:
-        resources: false
+openshift:
+    cluster: qa
 
+integrations:
+    openshift:
+        tokenLocation: file:/tmp/reader-token
+    dbh:
+        url: "http://dbh-aurora.qa.paas.skead.no"
+    operations:
+        scope: "dev"
 
 logging:
     pattern:
-      console: "%d [%-9.9thread] %highlight(%-5level) %cyan(%logger:%L) %X - %msg %n%rEx{full}"
-    # add mokey.openshift.token to ~/.spring-boot-devtools.properties
-
-
+        console: "%d [%-9.9thread] %highlight(%-5level) %cyan(%logger:%L) %X - %msg %n%rEx{full}"
 ---
 spring:
-  profiles: openshift
+    profiles: openshift
+
+aurora:
+    token:
+        location: /u01/secrets/app/aurora-token/token
