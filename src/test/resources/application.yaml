@@ -27,7 +27,3 @@ integrations:
 aurora:
     token:
         value: test-token
-
-meangenie:
-    username: username
-    password: password
