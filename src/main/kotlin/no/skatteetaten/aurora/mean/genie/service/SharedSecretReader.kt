@@ -18,9 +18,9 @@ class SharedSecretReader(
     @Value("\${aurora.token.value:}") private val secretValue: String?
 ) {
 
-    val secret = initSecret(secretValue)
+    val secret = initSecret()
 
-    private fun initSecret(secretValue: String?) =
+    private fun initSecret() =
         if (secretLocation.isNullOrEmpty() && secretValue.isNullOrEmpty()) {
             throw IllegalArgumentException("Either aurora.token.location or aurora.token.value must be specified")
         } else {

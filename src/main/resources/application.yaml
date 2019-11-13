@@ -6,7 +6,7 @@ spring:
 
 logging:
     level:
-        no.skatteetaten.aurora.mean.genie: DEBUG
+        no.skatteetaten.aurora.mean.genie: INFO
         org:
             hibernate: WARN
             springframework: WARN
@@ -27,10 +27,6 @@ integrations:
 spring:
     profiles: local
 
-mean-genie:
-    delete:
-        resources: false
-
 openshift:
     cluster: qa
 
@@ -45,10 +41,6 @@ integrations:
 logging:
     pattern:
         console: "%d [%-9.9thread] %highlight(%-5level) %cyan(%logger:%L) %X - %msg %n%rEx{full}"
-    # add mokey.openshift.token to ~/.spring-boot-devtools.properties
-
-aurora.token.value: token
-
 ---
 spring:
     profiles: openshift
