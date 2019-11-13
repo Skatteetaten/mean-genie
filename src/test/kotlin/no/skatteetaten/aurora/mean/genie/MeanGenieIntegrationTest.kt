@@ -52,17 +52,17 @@ class MeanGenieIntegrationTest {
     }
 
     @Test
-    fun `Received deleted event and call dbh`() {
+    fun `Receive deleted event and call dbh`() {
         val webSocket = await untilNotNull { openshiftListener.webSocket }
         webSocket.send(""" { "type":"DELETED", "object": { "spec": { "databases": ["123", "234"] } } } """)
 
         val request1 = dbh.takeRequest(1, TimeUnit.SECONDS)
-        assertThat(request1).deleteRequest("/api/v1/schema/123")
+        assertThat(request1).isDeleteRequest("/api/v1/schema/123")
         val request2 = dbh.takeRequest(1, TimeUnit.SECONDS)
-        assertThat(request2).deleteRequest("/api/v1/schema/234")
+        assertThat(request2).isDeleteRequest("/api/v1/schema/234")
     }
 
-    private fun Assert<RecordedRequest>.deleteRequest(path: String) = given {
+    private fun Assert<RecordedRequest>.isDeleteRequest(path: String) = given {
         if (it.path == path && it.method == HttpMethod.DELETE.name) return
         expected("DELETE request with path $path but was ${it.method} ${it.path}")
     }
