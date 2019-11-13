@@ -6,7 +6,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.mockk
 import io.mockk.verify
 import java.time.Duration
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 class ApplicationDeploymentWatcherServiceTest {
 

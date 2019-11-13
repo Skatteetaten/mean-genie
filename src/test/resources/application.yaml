@@ -17,10 +17,12 @@ management:
 
 integrations:
     openshift:
-        url: http://localhost:8081
+        port: 8081
+        url: http://localhost:${integrations.openshift.port}
         tokenLocation: classpath:/test-token.txt
     dbh:
-        url: http://localhost:8082
+        port: 8082
+        url: http://localhost:${integrations.dbh.port}
 
 aurora:
     token:

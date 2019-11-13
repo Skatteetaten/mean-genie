@@ -2,7 +2,10 @@ package no.skatteetaten.aurora.mean.genie
 
 import assertk.Assert
 import assertk.assertThat
+import assertk.assertions.isNull
 import assertk.assertions.support.expected
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import java.util.concurrent.TimeUnit
 import okhttp3.Response
 import okhttp3.WebSocket
@@ -15,10 +18,13 @@ import org.awaitility.kotlin.untilNotNull
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.core.io.ClassPathResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
+import org.springframework.test.context.ActiveProfiles
 
+@ActiveProfiles("test")
 @SpringBootTest
 class MeanGenieIntegrationTest {
     private val openshift = MockWebServer()
@@ -34,7 +40,7 @@ class MeanGenieIntegrationTest {
 
     init {
         openshift.enqueue(MockResponse().withWebSocketUpgrade(openshiftListener))
-        openshift.start(8081)
+        openshift.start("openshift".port())
 
         dbh.enqueue(
             MockResponse()
@@ -42,7 +48,7 @@ class MeanGenieIntegrationTest {
                 .setResponseCode(200)
                 .setBody("{}")
         )
-        dbh.start(8082)
+        dbh.start("dbh".port())
     }
 
     @AfterEach
@@ -60,6 +66,21 @@ class MeanGenieIntegrationTest {
         assertThat(request1).isDeleteRequest("/api/v1/schema/123")
         val request2 = dbh.takeRequest(1, TimeUnit.SECONDS)
         assertThat(request2).isDeleteRequest("/api/v1/schema/234")
+    }
+
+    @Test
+    fun `Receive deleted event without databases`() {
+        val webSocket = await untilNotNull { openshiftListener.webSocket }
+        webSocket.send(""" { "type":"DELETED", "object": { "spec": { "databases": [] } } } """)
+
+        val request = dbh.takeRequest(1, TimeUnit.SECONDS)
+        assertThat(request).isNull()
+    }
+
+    private fun String.port(): Int {
+        val yaml = ClassPathResource("application.yaml").file.readText()
+        val values = ObjectMapper(YAMLFactory()).readTree(yaml)
+        return values.at("/integrations/$this/port").asInt()
     }
 
     private fun Assert<RecordedRequest>.isDeleteRequest(path: String) = given {

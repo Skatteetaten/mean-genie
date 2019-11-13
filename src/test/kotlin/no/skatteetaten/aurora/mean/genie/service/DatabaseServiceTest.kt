@@ -8,7 +8,7 @@ import mu.KotlinLogging
 import no.skatteetaten.aurora.mean.genie.ApplicationConfig
 import no.skatteetaten.aurora.mockmvc.extensions.mockwebserver.execute
 import okhttp3.mockwebserver.MockWebServer
-import org.junit.Test
+import org.junit.jupiter.api.Test
 
 private val logger = KotlinLogging.logger {}
 
