@@ -26,7 +26,7 @@ class ApplicationDeploymentWatcherService(
     }
 
     fun checkForOperationScopeLabel(): String {
-        return if (operationScopeConfiguration == null) {
+        return if (operationScopeConfiguration.isNullOrEmpty()) {
             "!operationScope"
         } else {
             "operationScope=$operationScopeConfiguration"

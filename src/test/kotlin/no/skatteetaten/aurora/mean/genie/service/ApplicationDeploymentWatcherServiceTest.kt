@@ -14,7 +14,7 @@ class ApplicationDeploymentWatcherServiceTest {
     private val kubernetesWatcher = mockk<KubernetesWatcher>()
 
     private val applicationDeploymentWatcherService =
-        ApplicationDeploymentWatcherService(null, kubernetesWatcher, databaseService)
+        ApplicationDeploymentWatcherService("", kubernetesWatcher, databaseService)
 
     @Test
     fun `Check if operatioScope label is not set`() {

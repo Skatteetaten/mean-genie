@@ -73,7 +73,7 @@ class MeanGenieIntegrationTest {
         val webSocket = await untilNotNull { openshiftListener.webSocket }
         webSocket.send(""" { "type":"DELETED", "object": { "spec": { "databases": [] } } } """)
 
-        val request = dbh.takeRequest(1, TimeUnit.SECONDS)
+        val request = dbh.takeRequest(500, TimeUnit.MILLISECONDS)
         assertThat(request).isNull()
     }
 
