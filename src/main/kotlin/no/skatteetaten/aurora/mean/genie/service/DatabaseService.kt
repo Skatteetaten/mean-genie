@@ -20,4 +20,16 @@ class DatabaseService(val webClient: WebClient) {
                 .log()
         }
     }
+
+    fun getSchemaById(databases: List<String>): Flux<JsonNode> {
+        return databases.toFlux().flatMap { databaseId ->
+            webClient
+                .get()
+                .uri("/api/v1/schema/$databaseId")
+                .retrieve()
+                .bodyToMono<JsonNode>()
+                .log()
+        }
+    }
+
 }

@@ -41,7 +41,10 @@ class ApplicationDeploymentWatcherService(
             Mono.empty()
         } else {
             logger.debug { "Attempting to delete database schema $databases" }
-            databaseService.deleteSchemaByID(databases)
+            // hente ned alle databaser som er managed og eid av meg
+            // evt. flitrer bort alle databaseskjemaer som ikke skal slettes
+            // databaseService.deleteSchemaByID(databases)
+            databaseService.getSchemaById(databases)
                 .then()
         }
     }
