@@ -35,46 +35,38 @@ class ApplicationDeploymentWatcherService(
         }
     }
 
+    val JsonNode.namespace: String get() = this.at("/object/metadata/namespace").textValue()
+    val JsonNode.name: String get() = this.at("/object/metadata/name").textValue()
+    val JsonNode.affiliation: String get() = this.at("/object/metadata/labels/affiliation").textValue()
+    val JsonNode.databases: List<String>
+        get() {
+            val jsonArray = this.at("/object/spec/databases") as ArrayNode
+            return jsonArray.map { it.textValue() }
+        }
+    val JsonNode.databaseType: String get() = this.at("/items/0/type").textValue()
+    val JsonNode.databaseLabels: Map<String, String>
+        get() {
+            val labelValues: Map<String, String> = jacksonObjectMapper().convertValue(this.at("/items/0/labels"))
+            return labelValues.filter { (key, value) ->
+                key != "userId" && key != "name"
+            }
+        }
+
     fun deleteSchemasIfExists(event: JsonNode): Mono<Void> {
         val adLabels = mapOf(
-            "environment" to event.at("/object/metadata/namespace").textValue(),
-            "application" to event.at("/object/metadata/name").textValue(),
-            "affiliation" to event.at("/object/metadata/labels/affiliation").textValue()
+            "environment" to event.namespace,
+            "application" to event.name,
+            "affiliation" to event.affiliation
         )
 
-        val jsonArray = event.at("/object/spec/databases") as ArrayNode
-        val databases = jsonArray.map { it.textValue() }
-
+        val databases = event.databases
         return if (databases.isEmpty()) {
             Mono.empty()
         } else {
             logger.debug { "Attempting to delete database schema $databases" }
             databaseService.getSchemaById(databases)
-                .log()
-                .filter {
-
-                    val item: JsonNode = it.at("/items/0")
-                    val type = item["type"].textValue()
-
-                    if(type == "EXTERNAL") {
-                        false
-                    } else {
-
-                        val labelValues: Map<String, String> = jacksonObjectMapper()
-                            .convertValue(item["labels"])
-
-                        val schemaLabels = labelValues.filter { (key, value) ->
-                            key != "userId" && key != "name"
-                        }
-                         schemaLabels == adLabels
-
-                    }
-
-                }
-                .log()
-                .map {
-                    databaseService.deleteSchemaByID(databases)
-                }
+                .filter { it.databaseType != "EXTERNAL" && it.databaseLabels == adLabels }
+                .map { databaseService.deleteSchemaByID(databases) }
                 .then()
         }
     }
