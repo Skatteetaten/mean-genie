@@ -35,12 +35,13 @@ integrations:
         tokenLocation: file:/tmp/reader-token
     dbh:
         url: "http://dbh-aurora.qa.paas.skead.no"
-    operations:
-        scope: "dev"
 
 logging:
     pattern:
         console: "%d [%-9.9thread] %highlight(%-5level) %cyan(%logger:%L) %X - %msg %n%rEx{full}"
+aurora:
+    token:
+        value: "token"
 ---
 spring:
     profiles: openshift
