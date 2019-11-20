@@ -2,8 +2,6 @@ package no.skatteetaten.aurora.mean.genie.service
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
-import com.fasterxml.jackson.module.kotlin.convertValue
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Async
@@ -36,31 +34,9 @@ class ApplicationDeploymentWatcherService(
         }
     }
 
-    val JsonNode.namespace: String get() = this.at("/object/metadata/namespace").textValue()
-    val JsonNode.name: String get() = this.at("/object/metadata/name").textValue()
-    val JsonNode.affiliation: String get() = this.at("/object/metadata/labels/affiliation").textValue()
-    val JsonNode.databases: List<String>
-        get() {
-            val jsonArray = this.at("/object/spec/databases") as ArrayNode
-            return jsonArray.map { it.textValue() }
-        }
-    val JsonNode.databaseType: String get() = this.at("/items/0/type").textValue()
-    val JsonNode.databaseId: String get() = this.at("/items/0/id").textValue()
-    val JsonNode.databaseLabels: Map<String, String>
-        get() {
-            val labelValues: Map<String, String> = jacksonObjectMapper().convertValue(this.at("/items/0/labels"))
-            return labelValues.filter { (key, _) ->
-                key != "userId" && key != "name"
-            }
-        }
-
     fun deleteSchemasIfExists(event: JsonNode): Flux<JsonNode> {
-        val adLabels = mapOf(
-            "environment" to event.namespace,
-            "application" to event.name,
-            "affiliation" to event.affiliation
-        )
 
+        val event = KubernetesDatabaseEvent(event)
         val databases = event.databases
         if (databases.isEmpty()) {
             return Flux.empty()
@@ -72,9 +48,43 @@ class ApplicationDeploymentWatcherService(
             databaseService.getSchemaById(it)
         }.log()
             .filter {
-                it.databaseType != "EXTERNAL" && it.databaseLabels == adLabels
+                it.databaseType != "EXTERNAL" && it.databaseLabels == event.labels
             }.flatMap {
                 databaseService.deleteSchemaByID(it.databaseId)
             }.log()
     }
+}
+
+// TODO, denne eller den under?
+fun JsonNode.toKubernetesDatabaseEvent(): KubernetesDatabaseEvent2 {
+
+    val labels = mapOf(
+        "environment" to at("/object/metadata/namespace").textValue(),
+        "application" to at("/object/metadata/name").textValue(),
+        "affiliation" to at("/object/metadata/labels/affiliation").textValue()
+    )
+
+    val databases = (this.at("/object/spec/databases") as ArrayNode).map { it.textValue() }
+
+    return KubernetesDatabaseEvent2(databases, labels)
+}
+
+data class KubernetesDatabaseEvent2(val databases: List<String>, val labels: Map<String, String>)
+
+// TODO, er det bedre å lage objektet i en metode og få evt marshalling feil tidlig?
+class KubernetesDatabaseEvent(val jsonNode: JsonNode) {
+    val labels = mapOf(
+        "environment" to namespace,
+        "application" to name,
+        "affiliation" to affiliation
+    )
+
+    val namespace: String get() = jsonNode.at("/object/metadata/namespace").textValue()
+    val name: String get() = jsonNode.at("/object/metadata/name").textValue()
+    val affiliation: String get() = jsonNode.at("/object/metadata/labels/affiliation").textValue()
+    val databases: List<String>
+        get() {
+            val jsonArray = jsonNode.at("/object/spec/databases") as ArrayNode
+            return jsonArray.map { it.textValue() }
+        }
 }
