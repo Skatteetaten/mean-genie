@@ -30,7 +30,7 @@ class DatabaseServiceTest {
     @Test
     fun `Verify that deleteSchemaByID returns body that is not null`() {
         val request = server.execute(200 to jsonBody) {
-            val jsonResponse = databaseService.deleteSchemaByID(listOf("123")).blockFirst()
+            val jsonResponse = databaseService.deleteSchemaByID("123").block()
             assertThat(jsonResponse).isNotNull()
         }
         logger.info { request.first()?.headers }

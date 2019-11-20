@@ -6,7 +6,7 @@ import assertk.assertions.isNull
 import assertk.assertions.support.expected
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import java.util.concurrent.TimeUnit
+import no.skatteetaten.aurora.mean.genie.service.createMockSchemaRequestString
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
@@ -23,6 +23,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
+import java.util.concurrent.TimeUnit
 
 @ActiveProfiles("test")
 @SpringBootTest
@@ -42,12 +43,36 @@ class MeanGenieIntegrationTest {
         openshift.enqueue(MockResponse().withWebSocketUpgrade(openshiftListener))
         openshift.start("openshift".port())
 
+        // TODO: Er ikke dsl metoden jeg lagde for boober bedre å bruke her?
         dbh.enqueue(
             MockResponse()
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .setResponseCode(200)
-                .setBody("{}")
+                .setBody(createMockSchemaRequestString("123"))
         )
+
+        dbh.enqueue(
+            MockResponse()
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .setResponseCode(200)
+                .setBody(createMockSchemaRequestString("234"))
+        )
+
+        dbh.enqueue(
+            MockResponse()
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .setResponseCode(200)
+                .setBody(createMockSchemaRequestString("123"))
+        )
+
+        dbh.enqueue(
+            MockResponse()
+                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .setResponseCode(200)
+                .setBody(createMockSchemaRequestString("234"))
+        )
+
+
         dbh.start("dbh".port())
     }
 
@@ -60,12 +85,36 @@ class MeanGenieIntegrationTest {
     @Test
     fun `Receive deleted event and call dbh`() {
         val webSocket = await untilNotNull { openshiftListener.webSocket }
-        webSocket.send(""" { "type":"DELETED", "object": { "spec": { "databases": ["123", "234"] } } } """)
+        val json = """{
+            "type" : "DELETED",
+            "object": {
+              "metadata" : {
+                "name" : "test-app", 
+                "namespace" : "test-utv", 
+                "labels" : {
+                  "affiliation" : "test"
+                }
+              },
+              "spec": {
+                "databases": ["123","234"] 
+                } 
+               } 
+            }"""
+        webSocket.send(json)
+
+        /*
+        val get1 = dbh.takeRequest(1, TimeUnit.SECONDS)
+        assertThat(get1).isGetRequest("/api/v1/schema/123")
+
+        val get2 = dbh.takeRequest(1, TimeUnit.SECONDS)
+        assertThat(get2).isGetRequest("/api/v1/schema/234")
 
         val request1 = dbh.takeRequest(1, TimeUnit.SECONDS)
         assertThat(request1).isDeleteRequest("/api/v1/schema/123")
         val request2 = dbh.takeRequest(1, TimeUnit.SECONDS)
         assertThat(request2).isDeleteRequest("/api/v1/schema/234")
+
+         */
     }
 
     @Test
@@ -81,6 +130,11 @@ class MeanGenieIntegrationTest {
         val yaml = ClassPathResource("application.yaml").file.readText()
         val values = ObjectMapper(YAMLFactory()).readTree(yaml)
         return values.at("/integrations/$this/port").asInt()
+    }
+
+    private fun Assert<RecordedRequest>.isGetRequest(path: String) = given {
+        if (it.path == path && it.method == HttpMethod.GET.name) return
+        expected("GET request with path $path but was ${it.method} ${it.path}")
     }
 
     private fun Assert<RecordedRequest>.isDeleteRequest(path: String) = given {
