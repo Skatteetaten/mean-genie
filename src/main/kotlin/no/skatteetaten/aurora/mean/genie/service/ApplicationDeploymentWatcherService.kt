@@ -21,7 +21,18 @@ class ApplicationDeploymentWatcherService(
         val labelSelector = checkForOperationScopeLabel()
         val url = "/apis/skatteetaten.no/v1/applicationdeployments?watch=true&labelSelector=$labelSelector"
         watcher.watch(url, listOf("DELETED")) { event ->
-            deleteSchemasIfExists(event.toKubernetesDatabaseEvent())
+            val dbhEvent = event.toKubernetesDatabaseEvent()
+                dbhEvent.databases.forEach {
+                ensureThatSchemaIsDeleted(it, dbhEvent.labels)
+            }
+        }
+    }
+
+    suspend fun ensureThatSchemaIsDeleted(it: String, labels: Map<String, String>) {
+        val dbhResult = databaseService.getSchemaById(it)
+
+        if(dbhResult.type != "EXTERNAL" && dbhResult.labels == labels) {
+            databaseService.deleteSchemaByID(dbhResult.id)
         }
     }
 
@@ -30,23 +41,6 @@ class ApplicationDeploymentWatcherService(
             "!operationScope"
         } else {
             "operationScope=$operationScopeConfiguration"
-        }
-    }
-
-    suspend fun deleteSchemasIfExists(event: KubernetesDatabaseEvent): List<JsonNode> {
-
-        val databases = event.databases
-        if (databases.isEmpty()) {
-            return emptyList()
-        }
-        logger.debug { "Attempting to delete database schema $databases" }
-
-        return databases.map {
-            databaseService.getSchemaById(it)
-        }.filter {
-            it.type != "EXTERNAL" && it.labels == event.labels
-        }.map {
-            databaseService.deleteSchemaByID(it.id)
         }
     }
 }
