@@ -69,4 +69,3 @@ fun JsonNode.toKubernetesDatabaseEvent(): KubernetesDatabaseEvent {
 }
 
 data class KubernetesDatabaseEvent(val databases: List<String>, val labels: Map<String, String>)
-

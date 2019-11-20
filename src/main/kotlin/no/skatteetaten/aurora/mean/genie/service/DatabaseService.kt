@@ -38,4 +38,3 @@ class DatabaseService(val webClient: WebClient) {
 }
 
 data class DatabaseResult(val type: String, val id: String, val labels: Map<String, String>)
-
