@@ -12,15 +12,15 @@ class DatabaseService(val webClient: WebClient) {
     fun deleteSchemaByID(databaseId: String): Mono<JsonNode> {
         return webClient
             .delete()
-            .uri("/api/v1/schema/$databaseId")
+            .uri("/api/v1/schema/{database}", databaseId)
             .retrieve()
-            .bodyToMono<JsonNode>()
+            .bodyToMono()
     }
 
     fun getSchemaById(databaseId: String): Mono<JsonNode> {
         return webClient
             .get()
-            .uri("/api/v1/schema/$databaseId")
+            .uri("/api/v1/schema/{database}", databaseId)
             .retrieve()
             .bodyToMono()
     }
