@@ -6,9 +6,9 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
+import java.time.Duration
 import org.junit.jupiter.api.Test
 import reactor.kotlin.core.publisher.toMono
-import java.time.Duration
 
 class ApplicationDeploymentWatcherServiceTest {
 
