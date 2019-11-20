@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
+import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.toFlux
 
 private val logger = KotlinLogging.logger {}
@@ -21,9 +22,20 @@ class ApplicationDeploymentWatcherService(
     fun watch() {
         val labelSelector = checkForOperationScopeLabel()
         val url = "/apis/skatteetaten.no/v1/applicationdeployments?watch=true&labelSelector=$labelSelector"
-        watcher.watch(url, listOf("DELETED")) { event ->
-            deleteSchemasIfExists(event).then()
+        watcher.watch(url, listOf("DELETED")) {
+            val event = it.toKubernetesDatabaseEvent()
+            event.databases.toFlux().flatMap {dbId ->
+                deleteSchema(dbId, event.labels)
+            }.then()
         }
+    }
+
+    private fun deleteSchema(id: String, labels: Map<String, String>): Mono<JsonNode> {
+        return databaseService.getSchemaById(id)
+            .filter { it.type != "EXTERNAL" && it.labels == labels }
+            .flatMap {
+                databaseService.deleteSchemaByID(it.id)
+            }
     }
 
     fun checkForOperationScopeLabel(): String {
@@ -34,25 +46,6 @@ class ApplicationDeploymentWatcherService(
         }
     }
 
-    fun deleteSchemasIfExists(event: JsonNode): Flux<JsonNode> {
-
-        val event = event.toKubernetesDatabaseEvent()
-        val databases = event.databases
-        if (databases.isEmpty()) {
-            return Flux.empty()
-        }
-        logger.debug { "Attempting to delete database schema $databases" }
-
-        // TODO: Feilhåndtering. Retry. Hva hvis dbh feiler eller vi får feil.
-        return databases.toFlux().flatMap {
-            databaseService.getSchemaById(it)
-        }.log()
-            .filter {
-                it.type != "EXTERNAL" && it.labels == event.labels
-            }.flatMap {
-                databaseService.deleteSchemaByID(it.id)
-            }.log()
-    }
 }
 
 fun JsonNode.toKubernetesDatabaseEvent(): KubernetesDatabaseEvent {
