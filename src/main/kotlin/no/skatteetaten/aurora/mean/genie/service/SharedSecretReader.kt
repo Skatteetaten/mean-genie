@@ -11,6 +11,7 @@ private val logger = KotlinLogging.logger {}
 /**
  * Component for reading the shared secret used for authentication. You may specify the shared secret directly using
  * the aurora.token.value property, or specify a file containing the secret with the aurora.token.location property.
+ * TODO: Trenger vi at denne er slik? Kan vi ikke alltid bare støtte location og gjøre som vi gjør i openshiftToken?
  */
 @Component
 class SharedSecretReader(

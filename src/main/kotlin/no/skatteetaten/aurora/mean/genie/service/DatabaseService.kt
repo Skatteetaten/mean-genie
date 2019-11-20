@@ -3,6 +3,7 @@ package no.skatteetaten.aurora.mean.genie.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
@@ -11,15 +12,16 @@ import reactor.core.publisher.Mono
 @Service
 class DatabaseService(val webClient: WebClient) {
 
-    fun deleteSchemaByID(databaseId: String): Mono<JsonNode> {
+    suspend fun deleteSchemaByID(databaseId: String): JsonNode {
         return webClient
             .delete()
             .uri("/api/v1/schema/{database}", databaseId)
             .retrieve()
-            .bodyToMono()
+            .bodyToMono<JsonNode>()
+            .awaitFirst()
     }
 
-    fun getSchemaById(databaseId: String): Mono<DatabaseResult> {
+    suspend fun getSchemaById(databaseId: String): DatabaseResult {
         return webClient
             .get()
             .uri("/api/v1/schema/{database}", databaseId)
@@ -33,7 +35,7 @@ class DatabaseService(val webClient: WebClient) {
                     key != "userId" && key != "name"
                 }
                 DatabaseResult(databaseType, databaseId, databaseLabels)
-            }
+            }.awaitFirst()
     }
 }
 
