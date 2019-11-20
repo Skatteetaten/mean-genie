@@ -2,13 +2,12 @@ package no.skatteetaten.aurora.mean.genie.service
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.every
 import io.mockk.mockk
-import java.time.Duration
 import org.junit.jupiter.api.Test
 import reactor.kotlin.core.publisher.toMono
+import java.time.Duration
 
 class ApplicationDeploymentWatcherServiceTest {
 
@@ -39,8 +38,8 @@ class ApplicationDeploymentWatcherServiceTest {
         every { databaseService.getSchemaById("234") } returns createMockSchemaRequest("234").toMono()
 
         // TODO: Should this mock return be better so that we can assert below
-        every { databaseService.deleteSchemaByID("123") } returns createMockSchemaRequest("123").toMono()
-        every { databaseService.deleteSchemaByID("234") } returns createMockSchemaRequest("234").toMono()
+        every { databaseService.deleteSchemaByID("123") } returns jacksonObjectMapper().readTree("""{}""").toMono()
+        every { databaseService.deleteSchemaByID("234") } returns jacksonObjectMapper().readTree("""{}""").toMono()
 
         val json = """{
             "object": {
@@ -63,9 +62,15 @@ class ApplicationDeploymentWatcherServiceTest {
     }
 }
 
-fun createMockSchemaRequest(id: String, type: String = "MANAGED"): JsonNode {
+fun createMockSchemaRequest(id: String, type: String = "MANAGED"): DatabaseResult {
 
-    return jacksonObjectMapper().readTree(createMockSchemaRequestString(id, type))
+    return DatabaseResult(
+        type, id, mapOf(
+            "application" to "test-app",
+            "environment" to "test-utv",
+            "affiliation" to "test"
+        )
+    )
 }
 
 fun createMockSchemaRequestString(id: String, type: String = "MANAGED"): String {

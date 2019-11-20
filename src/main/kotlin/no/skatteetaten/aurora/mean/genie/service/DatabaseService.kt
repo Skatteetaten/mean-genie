@@ -24,20 +24,18 @@ class DatabaseService(val webClient: WebClient) {
             .get()
             .uri("/api/v1/schema/{database}", databaseId)
             .retrieve()
-            .bodyToMono<JsonNode>().map {
-                DatabaseResult(it)
+            .bodyToMono<JsonNode>().map { jsonNode ->
+                val databaseType: String = jsonNode.at("/items/0/type").textValue()
+                val databaseId: String = jsonNode.at("/items/0/id").textValue()
+                val labelValues: Map<String, String> =
+                    jacksonObjectMapper().convertValue(jsonNode.at("/items/0/labels"))
+                val databaseLabels = labelValues.filter { (key, _) ->
+                    key != "userId" && key != "name"
+                }
+                DatabaseResult(databaseType, databaseId, databaseLabels)
             }
     }
 }
 
-class DatabaseResult(private val jsonNode: JsonNode) {
-    val databaseType: String get() = jsonNode.at("/items/0/type").textValue()
-    val databaseId: String get() = jsonNode.at("/items/0/id").textValue()
-    val databaseLabels: Map<String, String>
-        get() {
-            val labelValues: Map<String, String> = jacksonObjectMapper().convertValue(jsonNode.at("/items/0/labels"))
-            return labelValues.filter { (key, _) ->
-                key != "userId" && key != "name"
-            }
-        }
-}
+data class DatabaseResult(val type: String, val id: String, val labels: Map<String, String>)
+

@@ -36,7 +36,7 @@ class ApplicationDeploymentWatcherService(
 
     fun deleteSchemasIfExists(event: JsonNode): Flux<JsonNode> {
 
-        val event = KubernetesDatabaseEvent(event)
+        val event = event.toKubernetesDatabaseEvent()
         val databases = event.databases
         if (databases.isEmpty()) {
             return Flux.empty()
@@ -48,15 +48,14 @@ class ApplicationDeploymentWatcherService(
             databaseService.getSchemaById(it)
         }.log()
             .filter {
-                it.databaseType != "EXTERNAL" && it.databaseLabels == event.labels
+                it.type != "EXTERNAL" && it.labels == event.labels
             }.flatMap {
-                databaseService.deleteSchemaByID(it.databaseId)
+                databaseService.deleteSchemaByID(it.id)
             }.log()
     }
 }
 
-// TODO, denne eller den under?
-fun JsonNode.toKubernetesDatabaseEvent(): KubernetesDatabaseEvent2 {
+fun JsonNode.toKubernetesDatabaseEvent(): KubernetesDatabaseEvent {
 
     val labels = mapOf(
         "environment" to at("/object/metadata/namespace").textValue(),
@@ -66,25 +65,8 @@ fun JsonNode.toKubernetesDatabaseEvent(): KubernetesDatabaseEvent2 {
 
     val databases = (this.at("/object/spec/databases") as ArrayNode).map { it.textValue() }
 
-    return KubernetesDatabaseEvent2(databases, labels)
+    return KubernetesDatabaseEvent(databases, labels)
 }
 
-data class KubernetesDatabaseEvent2(val databases: List<String>, val labels: Map<String, String>)
+data class KubernetesDatabaseEvent(val databases: List<String>, val labels: Map<String, String>)
 
-// TODO, er det bedre å lage objektet i en metode og få evt marshalling feil tidlig?
-class KubernetesDatabaseEvent(val jsonNode: JsonNode) {
-    val labels = mapOf(
-        "environment" to namespace,
-        "application" to name,
-        "affiliation" to affiliation
-    )
-
-    val namespace: String get() = jsonNode.at("/object/metadata/namespace").textValue()
-    val name: String get() = jsonNode.at("/object/metadata/name").textValue()
-    val affiliation: String get() = jsonNode.at("/object/metadata/labels/affiliation").textValue()
-    val databases: List<String>
-        get() {
-            val jsonArray = jsonNode.at("/object/spec/databases") as ArrayNode
-            return jsonArray.map { it.textValue() }
-        }
-}
