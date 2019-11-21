@@ -7,7 +7,6 @@ import kotlinx.coroutines.reactive.awaitFirst
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.bodyToMono
-import reactor.core.publisher.Mono
 
 @Service
 class DatabaseService(val webClient: WebClient) {
@@ -28,13 +27,13 @@ class DatabaseService(val webClient: WebClient) {
             .retrieve()
             .bodyToMono<JsonNode>().map { jsonNode ->
                 val databaseType: String = jsonNode.at("/items/0/type").textValue()
-                val databaseId: String = jsonNode.at("/items/0/id").textValue()
+                val id: String = jsonNode.at("/items/0/id").textValue()
                 val labelValues: Map<String, String> =
                     jacksonObjectMapper().convertValue(jsonNode.at("/items/0/labels"))
                 val databaseLabels = labelValues.filter { (key, _) ->
                     key != "userId" && key != "name"
                 }
-                DatabaseResult(databaseType, databaseId, databaseLabels)
+                DatabaseResult(databaseType, id, databaseLabels)
             }.awaitFirst()
     }
 }
