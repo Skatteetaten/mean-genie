@@ -2,9 +2,12 @@ package no.skatteetaten.aurora.mean.genie.service
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import assertk.assertions.isNotNull
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import java.time.Duration
 import org.junit.jupiter.api.Test
 import reactor.kotlin.core.publisher.toMono
@@ -34,31 +37,15 @@ class ApplicationDeploymentWatcherServiceTest {
     @Test
     fun `Set database to cooldown if found`() {
 
-        every { databaseService.getSchemaById("123") } returns createMockSchemaRequest("123").toMono()
-        every { databaseService.getSchemaById("234") } returns createMockSchemaRequest("234").toMono()
+        coEvery { databaseService.getSchemaById("123") } returns createMockSchemaRequest("123")
+        coEvery { databaseService.deleteSchemaByID("123") } returns jacksonObjectMapper().readTree("""{}""")
 
-        // TODO: Should this mock return be better so that we can assert below
-        every { databaseService.deleteSchemaByID("123") } returns jacksonObjectMapper().readTree("""{}""").toMono()
-        every { databaseService.deleteSchemaByID("234") } returns jacksonObjectMapper().readTree("""{}""").toMono()
-
-        val json = """{
-            "object": {
-              "metadata" : {
-                "name" : "test-app", 
-                "namespace" : "test-utv", 
-                "labels" : {
-                  "affiliation" : "test"
-                }
-              },
-              "spec": {
-                "databases": ["123","234"] 
-                } 
-               } 
-            }"""
-        val jsonNode = jacksonObjectMapper().readTree(json)
-        val response = applicationDeploymentWatcherService.deleteSchemasIfExists(jsonNode)
-        val databases = response.timeout(Duration.ofSeconds(1)).toIterable().toList()
-        assertThat(databases.size).isEqualTo(2)
+        val database = runBlocking {applicationDeploymentWatcherService.handleDeleteDatabaseSchema("123", mapOf(
+            "affiliation" to "test",
+            "application" to "test-app",
+            "environment" to "test-utv"
+        ))}
+        assertThat(database).isNotNull()
     }
 }
 

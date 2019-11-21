@@ -2,7 +2,6 @@ package no.skatteetaten.aurora.mean.genie.service
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ArrayNode
-import kotlinx.coroutines.reactive.awaitFirst
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Async
@@ -23,17 +22,17 @@ class ApplicationDeploymentWatcherService(
         watcher.watch(url, listOf("DELETED")) { event ->
             val dbhEvent = event.toKubernetesDatabaseEvent()
                 dbhEvent.databases.forEach {
-                ensureThatSchemaIsDeleted(it, dbhEvent.labels)
+                handleDeleteDatabaseSchema(it, dbhEvent.labels)
             }
         }
     }
 
-    suspend fun ensureThatSchemaIsDeleted(it: String, labels: Map<String, String>) {
+    suspend fun handleDeleteDatabaseSchema(it: String, labels: Map<String, String>) : JsonNode?{
         val dbhResult = databaseService.getSchemaById(it)
 
-        if(dbhResult.type != "EXTERNAL" && dbhResult.labels == labels) {
+        return if(dbhResult.type != "EXTERNAL" && dbhResult.labels == labels) {
             databaseService.deleteSchemaByID(dbhResult.id)
-        }
+        } else null
     }
 
     fun checkForOperationScopeLabel(): String {

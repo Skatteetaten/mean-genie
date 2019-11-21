@@ -4,6 +4,7 @@ import assertk.assertThat
 import assertk.assertions.isNotNull
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import mu.KotlinLogging
 import no.skatteetaten.aurora.mean.genie.ApplicationConfig
 import no.skatteetaten.aurora.mockmvc.extensions.mockwebserver.execute
@@ -30,7 +31,7 @@ class DatabaseServiceTest {
     @Test
     fun `Verify that deleteSchemaByID returns body that is not null`() {
         val request = server.execute(200 to jsonBody) {
-            val jsonResponse = databaseService.deleteSchemaByID("123").block()
+            val jsonResponse = runBlocking  {databaseService.deleteSchemaByID("123") }
             assertThat(jsonResponse).isNotNull()
         }
         logger.info { request.first()?.headers }
