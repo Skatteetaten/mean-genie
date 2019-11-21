@@ -22,6 +22,7 @@ class ApplicationDeploymentWatcherService(
         watcher.watch(url, listOf("DELETED")) { event ->
             val dbhEvent = event.toKubernetesDatabaseEvent()
             dbhEvent.databases.forEach {
+                //TODO: burde vi try/catcher her og logge feil? Blir det da lettere å teste feil lengre oppe?
                 handleDeleteDatabaseSchema(it, dbhEvent.labels)
             }
         }

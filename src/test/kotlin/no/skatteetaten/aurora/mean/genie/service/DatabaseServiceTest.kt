@@ -1,7 +1,9 @@
 package no.skatteetaten.aurora.mean.genie.service
 
 import assertk.assertThat
+import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
+import assertk.assertions.isNull
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -37,4 +39,33 @@ class DatabaseServiceTest {
         }
         logger.info { request.first()?.headers }
     }
+
+    @Test
+    fun `Verify that deleteSchemaByID should not retry not authenticated error`() {
+        val request = server.execute(401 to jsonBody) {
+            val jsonResponse = runBlocking { databaseService.deleteSchemaByID("123") }
+            assertThat(jsonResponse).isNull()
+        }
+        logger.info { request.first()?.headers }
+    }
+
+    @Test
+    fun `Verify that deleteSchemaByID should retry 503 error`() {
+        val request = server.execute(503 to jsonBody, 200 to jsonBody) {
+            val jsonResponse = runBlocking { databaseService.deleteSchemaByID("123") }
+            assertThat(jsonResponse).isNotNull()
+        }
+        assertThat(request.size).isEqualTo(2)
+    }
+
+    @Test
+    fun `Verify that deleteSchemaByID should retry 503 error 3 times`() {
+        val request = server.execute(503 to jsonBody, 503 to jsonBody, 503 to jsonBody) {
+            val jsonResponse = runBlocking { databaseService.deleteSchemaByID("123") }
+            assertThat(jsonResponse).isNull()
+        }
+
+        assertThat(request.size).isEqualTo(3)
+    }
+
 }
