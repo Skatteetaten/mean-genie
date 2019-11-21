@@ -2,17 +2,14 @@ package no.skatteetaten.aurora.mean.genie.service
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.reactor.mono
 import java.net.ConnectException
 import java.net.URI
+import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient
-import reactor.core.publisher.Mono
-import reactor.kotlin.core.publisher.toMono
 import reactor.netty.http.client.PrematureCloseException
 
 /**
@@ -74,7 +71,7 @@ class KubernetesWatcher(
                         it.at("/type").textValue() in types
                     }
                 }.flatMap {
-                    //TODO: Set things in this scope if we need it
+                    // TODO: Set things in this scope if we need it
                     mono {
                         fn(it)
                     }

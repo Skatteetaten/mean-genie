@@ -5,12 +5,9 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import java.time.Duration
 import org.junit.jupiter.api.Test
-import reactor.kotlin.core.publisher.toMono
 
 class ApplicationDeploymentWatcherServiceTest {
 
@@ -40,11 +37,11 @@ class ApplicationDeploymentWatcherServiceTest {
         coEvery { databaseService.getSchemaById("123") } returns createMockSchemaRequest("123")
         coEvery { databaseService.deleteSchemaByID("123") } returns jacksonObjectMapper().readTree("""{}""")
 
-        val database = runBlocking {applicationDeploymentWatcherService.handleDeleteDatabaseSchema("123", mapOf(
+        val database = runBlocking { applicationDeploymentWatcherService.handleDeleteDatabaseSchema("123", mapOf(
             "affiliation" to "test",
             "application" to "test-app",
             "environment" to "test-utv"
-        ))}
+        )) }
         assertThat(database).isNotNull()
     }
 }

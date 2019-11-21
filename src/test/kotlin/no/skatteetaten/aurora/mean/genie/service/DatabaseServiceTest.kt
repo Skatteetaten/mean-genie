@@ -28,10 +28,11 @@ class DatabaseServiceTest {
         )
     private val databaseService = DatabaseService(webClient, 50, 100)
 
+    // TODO: test retry and failure handling?
     @Test
     fun `Verify that deleteSchemaByID returns body that is not null`() {
         val request = server.execute(200 to jsonBody) {
-            val jsonResponse = runBlocking  {databaseService.deleteSchemaByID("123") }
+            val jsonResponse = runBlocking { databaseService.deleteSchemaByID("123") }
             assertThat(jsonResponse).isNotNull()
         }
         logger.info { request.first()?.headers }
