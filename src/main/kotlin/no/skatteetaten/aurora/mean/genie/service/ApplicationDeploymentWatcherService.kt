@@ -21,7 +21,7 @@ class ApplicationDeploymentWatcherService(
         val url = "/apis/skatteetaten.no/v1/applicationdeployments?watch=true&labelSelector=$labelSelector"
         watcher.watch(url, listOf("DELETED")) { event ->
             val dbhEvent = event.toKubernetesDatabaseEvent()
-                dbhEvent.databases.forEach {
+            dbhEvent.databases.forEach {
                 handleDeleteDatabaseSchema(it, dbhEvent.labels)
             }
         }
@@ -31,7 +31,11 @@ class ApplicationDeploymentWatcherService(
         val dbhResult = databaseService.getSchemaById(it) ?: return null
 
         return if (dbhResult.type != "EXTERNAL" && dbhResult.labels == labels) {
-            databaseService.deleteSchemaByID(dbhResult.id)
+            val result = databaseService.deleteSchemaByID(dbhResult.id)
+            if (result != null) {
+                logger.info { "Deleted database with id=${dbhResult.id}" }
+            }
+            result
         } else null
     }
 
