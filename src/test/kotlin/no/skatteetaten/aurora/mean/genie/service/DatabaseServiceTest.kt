@@ -26,7 +26,7 @@ class DatabaseServiceTest {
         applicationConfig.webClientDbh(
             applicationConfig.dbhTcpClientWrapper(1000, 1000, 1000, null), url
         )
-    private val databaseService = DatabaseService(webClient)
+    private val databaseService = DatabaseService(webClient, 50, 100)
 
     @Test
     fun `Verify that deleteSchemaByID returns body that is not null`() {

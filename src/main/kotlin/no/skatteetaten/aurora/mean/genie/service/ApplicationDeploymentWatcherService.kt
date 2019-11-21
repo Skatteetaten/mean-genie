@@ -28,7 +28,7 @@ class ApplicationDeploymentWatcherService(
     }
 
     suspend fun handleDeleteDatabaseSchema(it: String, labels: Map<String, String>) : JsonNode?{
-        val dbhResult = databaseService.getSchemaById(it)
+        val dbhResult = databaseService.getSchemaById(it) ?: return null
 
         return if(dbhResult.type != "EXTERNAL" && dbhResult.labels == labels) {
             databaseService.deleteSchemaByID(dbhResult.id)
