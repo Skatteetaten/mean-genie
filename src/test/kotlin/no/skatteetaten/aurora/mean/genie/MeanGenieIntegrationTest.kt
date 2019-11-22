@@ -6,6 +6,7 @@ import assertk.assertions.isEmpty
 import assertk.assertions.support.expected
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import java.util.concurrent.TimeUnit
 import no.skatteetaten.aurora.mean.genie.service.createGetSchemaResultJson
 import okhttp3.Response
 import okhttp3.WebSocket
@@ -25,7 +26,6 @@ import org.springframework.http.HttpMethod.DELETE
 import org.springframework.http.HttpMethod.GET
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
-import java.util.concurrent.TimeUnit
 
 @ActiveProfiles("test")
 @SpringBootTest
