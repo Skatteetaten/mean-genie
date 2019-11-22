@@ -30,10 +30,6 @@ class DatabaseService(
             .retrieve()
             .bodyToMono<JsonNode>()
             .retryWithLog(retryMinDelay, retryMaxDelay)
-            .onErrorResume {
-                logger.info("Failed deleting schema with id=$databaseId")
-                Mono.empty()
-            }
             .awaitFirst()
     }
 
@@ -42,7 +38,9 @@ class DatabaseService(
             .get()
             .uri("/api/v1/schema/{database}", databaseId)
             .retrieve()
-            .bodyToMono<JsonNode>().map { jsonNode ->
+            .bodyToMono<JsonNode>()
+            .retryWithLog(retryMinDelay, retryMaxDelay)
+            .map { jsonNode ->
                 val databaseType: String = jsonNode.at("/items/0/type").textValue()
                 val id: String = jsonNode.at("/items/0/id").textValue()
                 val labelValues: Map<String, String> =
@@ -52,7 +50,6 @@ class DatabaseService(
                 }
                 DatabaseResult(databaseType, id, databaseLabels)
             }
-            .retryWithLog(retryMinDelay, retryMaxDelay)
             .awaitFirst()
     }
 

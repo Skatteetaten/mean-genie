@@ -2,8 +2,8 @@ package no.skatteetaten.aurora.mean.genie.service
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import assertk.assertions.isFailure
 import assertk.assertions.isNotNull
-import assertk.assertions.isNull
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -30,23 +30,32 @@ class DatabaseServiceTest {
         )
     private val databaseService = DatabaseService(webClient, 50, 100)
 
-    // TODO: test retry and failure handling?
+    @Test
+    fun `Verify that getSchema returns body `() {
+        val request = server.execute(200 to createGetSchemaResultJson("123")) {
+            val jsonResponse = runBlocking { databaseService.getSchemaById("123") }
+            assertThat(jsonResponse.id).isEqualTo("123")
+        }
+        assertThat(request.first()).isNotNull()
+    }
+
     @Test
     fun `Verify that deleteSchemaByID returns body that is not null`() {
         val request = server.execute(200 to jsonBody) {
             val jsonResponse = runBlocking { databaseService.deleteSchemaByID("123") }
             assertThat(jsonResponse).isNotNull()
         }
-        logger.info { request.first()?.headers }
+        assertThat(request.first()).isNotNull()
     }
 
     @Test
     fun `Verify that deleteSchemaByID should not retry not authenticated error`() {
         val request = server.execute(401 to jsonBody) {
-            val jsonResponse = runBlocking { databaseService.deleteSchemaByID("123") }
-            assertThat(jsonResponse).isNull()
+            assertThat {
+                runBlocking { databaseService.deleteSchemaByID("123") }
+            }.isFailure()
         }
-        logger.info { request.first()?.headers }
+        assertThat(request.first()).isNotNull()
     }
 
     @Test
@@ -61,10 +70,10 @@ class DatabaseServiceTest {
     @Test
     fun `Verify that deleteSchemaByID should retry 503 error 3 times`() {
         val request = server.execute(503 to jsonBody, 503 to jsonBody, 503 to jsonBody) {
-            val jsonResponse = runBlocking { databaseService.deleteSchemaByID("123") }
-            assertThat(jsonResponse).isNull()
+            assertThat {
+                runBlocking { databaseService.deleteSchemaByID("123") }
+            }.isFailure()
         }
-
         assertThat(request.size).isEqualTo(3)
     }
 }

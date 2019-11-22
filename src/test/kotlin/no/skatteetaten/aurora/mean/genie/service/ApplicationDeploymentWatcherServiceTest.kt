@@ -57,7 +57,7 @@ fun createMockSchemaRequest(id: String, type: String = "MANAGED"): DatabaseResul
     )
 }
 
-fun createMockSchemaRequestString(id: String, type: String = "MANAGED"): String {
+fun createGetSchemaResultJson(id: String, type: String = "MANAGED"): String {
     return """
             {
               "items": [
