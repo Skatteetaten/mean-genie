@@ -74,7 +74,11 @@ class KubernetesWatcher(
                 }.flatMap {
                     // TODO: Set things in this scope if we need it
                     mono {
-                        fn(it)
+                        try {
+                            fn(it)
+                        } catch (e: Exception) {
+                            logger.info("Caught error from watch handle function", e)
+                        }
                     }
                 }.then()
         }.block()
