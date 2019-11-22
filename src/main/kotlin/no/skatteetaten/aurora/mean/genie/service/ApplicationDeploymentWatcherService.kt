@@ -32,8 +32,7 @@ class ApplicationDeploymentWatcherService(
     }
 
     suspend fun handleDeleteDatabaseSchema(id: String, labels: Map<String, String>): JsonNode? {
-        // TODO: hva vil vi skal skje her hvis en annen lytter allerede har slettet dette skjema? Hva vil dbh returnere og hvis det skjer skal vi da retrye eller skal vi bare fortsette loopen
-        val dbhResult = databaseService.getSchemaById(id)
+        val dbhResult = databaseService.getSchemaById(id) ?: return null
 
         logger.debug { "God schema with details $dbhResult" }
         return if (dbhResult.type != "EXTERNAL" && dbhResult.labels == labels) {

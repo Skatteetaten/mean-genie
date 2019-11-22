@@ -4,6 +4,7 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFailure
 import assertk.assertions.isNotNull
+import assertk.assertions.isNull
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
@@ -13,6 +14,7 @@ import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
+import org.springframework.web.reactive.function.client.WebClient
 
 @TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class DatabaseServiceTest {
@@ -26,9 +28,10 @@ class DatabaseServiceTest {
 
     private val webClient =
         applicationConfig.webClientDbh(
-            applicationConfig.dbhTcpClientWrapper(1000, 1000, 1000, null), url
+            applicationConfig.dbhTcpClientWrapper(1000, 1000, 1000, null), url,
+            WebClient.builder()
         )
-    private val databaseService = DatabaseService(webClient, 50, 100)
+    private val databaseService = DatabaseService(webClient, 50, 100, 3)
 
     @AfterEach
     fun tearDown() {
@@ -39,7 +42,16 @@ class DatabaseServiceTest {
     fun `Verify that getSchema returns body `() {
         val request = server.execute(200 to createGetSchemaResultJson("123")) {
             val jsonResponse = runBlocking { databaseService.getSchemaById("123") }
-            assertThat(jsonResponse.id).isEqualTo("123")
+            assertThat(jsonResponse?.id).isEqualTo("123")
+        }
+        assertThat(request.first()).isNotNull()
+    }
+
+    @Test
+    fun `Verify that getSchema for non existing schame does not throw`() {
+        val request = server.execute(404 to """{}""") {
+            val jsonResponse = runBlocking { databaseService.getSchemaById("123") }
+            assertThat(jsonResponse).isNull()
         }
         assertThat(request.first()).isNotNull()
     }

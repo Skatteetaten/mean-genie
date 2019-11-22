@@ -4,14 +4,6 @@ import io.netty.channel.ChannelOption
 import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.timeout.ReadTimeoutHandler
 import io.netty.handler.timeout.WriteTimeoutHandler
-import java.io.FileInputStream
-import java.nio.charset.StandardCharsets
-import java.security.KeyStore
-import java.security.cert.CertificateFactory
-import java.security.cert.X509Certificate
-import java.util.UUID
-import java.util.concurrent.TimeUnit
-import javax.net.ssl.TrustManagerFactory
 import no.skatteetaten.aurora.filter.logging.AuroraHeaderFilter
 import no.skatteetaten.aurora.mean.genie.service.SharedSecretReader
 import org.springframework.beans.factory.annotation.Qualifier
@@ -31,6 +23,14 @@ import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClien
 import reactor.netty.http.client.HttpClient
 import reactor.netty.tcp.SslProvider
 import reactor.netty.tcp.TcpClient
+import java.io.FileInputStream
+import java.nio.charset.StandardCharsets
+import java.security.KeyStore
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
+import java.util.UUID
+import java.util.concurrent.TimeUnit
+import javax.net.ssl.TrustManagerFactory
 
 const val HEADER_KLIENTID = "KlientID"
 
@@ -60,10 +60,10 @@ class ApplicationConfig(
     @Bean
     fun webClientDbh(
         @Qualifier("dbh") tcpClient: TcpClient,
-        @Value("\${integrations.dbh.url}") dbhUrl: String
+        @Value("\${integrations.dbh.url}") dbhUrl: String,
+        webclientBuilder: WebClient.Builder
     ): WebClient =
-        WebClient
-            .builder()
+        webclientBuilder
             .baseUrl(dbhUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .defaultHeader(HEADER_KLIENTID, applicationName)

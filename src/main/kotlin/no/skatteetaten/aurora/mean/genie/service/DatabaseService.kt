@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kotlinx.coroutines.reactive.awaitFirst
+import kotlinx.coroutines.reactive.awaitFirstOrNull
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -19,8 +20,9 @@ private val logger = KotlinLogging.logger {}
 @Service
 class DatabaseService(
     val webClient: WebClient,
-    @Value("\${integrations.dbh.retryMinDelay:100}") val retryMinDelay: Long,
-    @Value("\${integrations.dbh.retryMaxDelay:2000}") val retryMaxDelay: Long
+    @Value("\${integrations.dbh.retry.delay.min:100}") val retryMinDelay: Long,
+    @Value("\${integrations.dbh.retry.delay.maxy:2000}") val retryMaxDelay: Long,
+    @Value("\${integrations.dbh.retry.times:3}") val retryTimes: Long
 ) {
 
     suspend fun deleteSchemaByID(databaseId: String): JsonNode {
@@ -29,28 +31,33 @@ class DatabaseService(
             .uri("/api/v1/schema/{database}", databaseId)
             .retrieve()
             .bodyToMono<JsonNode>()
-            .retryWithLog(retryMinDelay, retryMaxDelay)
+            .retryWithLog(retryMinDelay, retryMaxDelay, retryTimes)
             .awaitFirst()
     }
 
-    suspend fun getSchemaById(databaseId: String): DatabaseResult {
+    suspend fun getSchemaById(databaseId: String): DatabaseResult? {
         return webClient
             .get()
             .uri("/api/v1/schema/{database}", databaseId)
             .retrieve()
             .bodyToMono<JsonNode>()
-            .retryWithLog(retryMinDelay, retryMaxDelay)
-            .map { jsonNode ->
-                val databaseType: String = jsonNode.at("/items/0/type").textValue()
-                val id: String = jsonNode.at("/items/0/id").textValue()
-                val labelValues: Map<String, String> =
-                    jacksonObjectMapper().convertValue(jsonNode.at("/items/0/labels"))
-                val databaseLabels = labelValues.filter { (key, _) ->
-                    key != "userId" && key != "name"
-                }
-                DatabaseResult(databaseType, id, databaseLabels)
+            .onErrorResume(WebClientResponseException.NotFound::class.java) {
+                Mono.empty()
             }
-            .awaitFirst()
+            .retryWithLog(retryMinDelay, retryMaxDelay, retryTimes)
+            .map { it.toDatabaseResponse() }
+            .awaitFirstOrNull()
+    }
+
+    private fun JsonNode.toDatabaseResponse(): DatabaseResult {
+        val databaseType: String = this.at("/items/0/type").textValue()
+        val id: String = this.at("/items/0/id").textValue()
+        val labelValues: Map<String, String> =
+            jacksonObjectMapper().convertValue(this.at("/items/0/labels"))
+        val databaseLabels = labelValues.filter { (key, _) ->
+            key != "userId" && key != "name"
+        }
+        return DatabaseResult(databaseType, id, databaseLabels)
     }
 
     fun <T> Mono<T>.retryWithLog(retryFirstInMs: Long, retryMaxInMs: Long, retryTimes: Long = 3): Mono<T> {
@@ -58,6 +65,7 @@ class DatabaseService(
             logger.debug("Do not retry")
             return this
         }
+
         return this.retryWhen(Retry.onlyIf<Mono<T>> {
             // TODO: Burde vi logge litt hver gang? mulighet for å skru av i test?
             if (it.iteration() == retryTimes) {
