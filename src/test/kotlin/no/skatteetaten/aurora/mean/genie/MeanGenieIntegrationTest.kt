@@ -45,7 +45,6 @@ class MeanGenieIntegrationTest {
         openshift.enqueue(MockResponse().withWebSocketUpgrade(openshiftListener))
         openshift.start("openshift".port())
 
-        // TODO: Er ikke dsl metoden jeg lagde for boober bedre å bruke her?
         dbh.enqueue(
             MockResponse()
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)

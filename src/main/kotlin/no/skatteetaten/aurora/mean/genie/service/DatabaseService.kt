@@ -67,7 +67,6 @@ class DatabaseService(
         }
 
         return this.retryWhen(Retry.onlyIf<Mono<T>> {
-            // TODO: Burde vi logge litt hver gang? mulighet for å skru av i test?
             if (it.iteration() == retryTimes) {
                 logger.info {
                     val e = it.exception()
@@ -78,6 +77,8 @@ class DatabaseService(
                         msg
                     }
                 }
+            } else {
+                logger.debug("retrying message=${it.exception().message}")
             }
 
             it.exception() !is WebClientResponseException.Unauthorized
