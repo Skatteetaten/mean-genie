@@ -3,7 +3,7 @@ package no.skatteetaten.aurora.mean.genie.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.convertValue
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitFirst
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -23,7 +23,7 @@ class DatabaseService(
     @Value("\${integrations.dbh.retryMaxDelay:2000}") val retryMaxDelay: Long
 ) {
 
-    suspend fun deleteSchemaByID(databaseId: String): JsonNode? {
+    suspend fun deleteSchemaByID(databaseId: String): JsonNode {
         return webClient
             .delete()
             .uri("/api/v1/schema/{database}", databaseId)
@@ -34,10 +34,10 @@ class DatabaseService(
                 logger.info("Failed deleting schema with id=$databaseId")
                 Mono.empty()
             }
-            .awaitFirstOrNull()
+            .awaitFirst()
     }
 
-    suspend fun getSchemaById(databaseId: String): DatabaseResult? {
+    suspend fun getSchemaById(databaseId: String): DatabaseResult {
         return webClient
             .get()
             .uri("/api/v1/schema/{database}", databaseId)
@@ -53,18 +53,17 @@ class DatabaseService(
                 DatabaseResult(databaseType, id, databaseLabels)
             }
             .retryWithLog(retryMinDelay, retryMaxDelay)
-            //TODO: Burde vi gjøre dette her?
-            .onErrorResume {
-                logger.info("Failed getting schema with id=$databaseId")
-                Mono.empty()
-            }
-            .awaitFirstOrNull()
+            .awaitFirst()
     }
 
-    fun <T> Mono<T>.retryWithLog(retryFirstInMs: Long, retryMaxInMs: Long) =
-        this.retryWhen(Retry.onlyIf<Mono<T>> {
-            // TODO: Burde vi logge litt hver gang?
-            if (it.iteration() == 3L) {
+    fun <T> Mono<T>.retryWithLog(retryFirstInMs: Long, retryMaxInMs: Long, retryTimes: Long = 3): Mono<T> {
+        if (retryTimes == 0L) {
+            logger.debug("Do not retry")
+            return this
+        }
+        return this.retryWhen(Retry.onlyIf<Mono<T>> {
+            // TODO: Burde vi logge litt hver gang? mulighet for å skru av i test?
+            if (it.iteration() == retryTimes) {
                 logger.info {
                     val e = it.exception()
                     val msg = "Retrying failed request, ${e.message}"
@@ -77,7 +76,8 @@ class DatabaseService(
             }
 
             it.exception() !is WebClientResponseException.Unauthorized
-        }.exponentialBackoff(Duration.ofMillis(retryFirstInMs), Duration.ofMillis(retryMaxInMs)).retryMax(3))
+        }.exponentialBackoff(Duration.ofMillis(retryFirstInMs), Duration.ofMillis(retryMaxInMs)).retryMax(retryTimes))
+    }
 }
 
 data class DatabaseResult(val type: String, val id: String, val labels: Map<String, String>)

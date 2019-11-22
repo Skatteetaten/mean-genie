@@ -22,21 +22,24 @@ class ApplicationDeploymentWatcherService(
         watcher.watch(url, listOf("DELETED")) { event ->
             val dbhEvent = event.toKubernetesDatabaseEvent()
             dbhEvent.databases.forEach {
-                //TODO: burde vi try/catcher her og logge feil? Blir det da lettere å teste feil lengre oppe?
-                handleDeleteDatabaseSchema(it, dbhEvent.labels)
+                try {
+                    handleDeleteDatabaseSchema(it, dbhEvent.labels)
+                } catch (e: Exception) {
+                    logger.info("Failed deleting database with id=${it}", e)
+                }
             }
         }
     }
 
-    suspend fun handleDeleteDatabaseSchema(it: String, labels: Map<String, String>): JsonNode? {
-        val dbhResult = databaseService.getSchemaById(it) ?: return null
+    suspend fun handleDeleteDatabaseSchema(id: String, labels: Map<String, String>): JsonNode? {
+        //TODO: hva vil vi skal skje her hvis en annen lytter allerede har slettet dette skjema? Hva vil dbh returnere og hvis det skjer skal vi da retrye eller skal vi bare fortsette loopen
+        val dbhResult = databaseService.getSchemaById(id)
 
+        logger.debug { "God schema with details ${dbhResult}" }
         return if (dbhResult.type != "EXTERNAL" && dbhResult.labels == labels) {
-            val result = databaseService.deleteSchemaByID(dbhResult.id)
-            if (result != null) {
-                logger.info { "Deleted database with id=${dbhResult.id}" }
+            databaseService.deleteSchemaByID(dbhResult.id).also {
+                logger.info { "Deleted schema with id=${id}" }
             }
-            result
         } else null
     }
 
