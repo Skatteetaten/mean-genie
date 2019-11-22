@@ -25,20 +25,20 @@ class ApplicationDeploymentWatcherService(
                 try {
                     handleDeleteDatabaseSchema(it, dbhEvent.labels)
                 } catch (e: Exception) {
-                    logger.info("Failed deleting database with id=${it}", e)
+                    logger.info("Failed deleting database with id=$it", e)
                 }
             }
         }
     }
 
     suspend fun handleDeleteDatabaseSchema(id: String, labels: Map<String, String>): JsonNode? {
-        //TODO: hva vil vi skal skje her hvis en annen lytter allerede har slettet dette skjema? Hva vil dbh returnere og hvis det skjer skal vi da retrye eller skal vi bare fortsette loopen
+        // TODO: hva vil vi skal skje her hvis en annen lytter allerede har slettet dette skjema? Hva vil dbh returnere og hvis det skjer skal vi da retrye eller skal vi bare fortsette loopen
         val dbhResult = databaseService.getSchemaById(id)
 
-        logger.debug { "God schema with details ${dbhResult}" }
+        logger.debug { "God schema with details $dbhResult" }
         return if (dbhResult.type != "EXTERNAL" && dbhResult.labels == labels) {
             databaseService.deleteSchemaByID(dbhResult.id).also {
-                logger.info { "Deleted schema with id=${id}" }
+                logger.info { "Deleted schema with id=$id" }
             }
         } else null
     }

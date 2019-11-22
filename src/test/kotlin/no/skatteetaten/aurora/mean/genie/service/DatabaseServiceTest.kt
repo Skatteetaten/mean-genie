@@ -67,5 +67,4 @@ class DatabaseServiceTest {
 
         assertThat(request.size).isEqualTo(3)
     }
-
 }

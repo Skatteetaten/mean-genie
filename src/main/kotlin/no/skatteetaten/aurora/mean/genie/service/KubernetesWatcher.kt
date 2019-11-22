@@ -45,7 +45,8 @@ class KubernetesWatcher(
     val closeableWatcher: CloseableWatcher
 ) {
 
-    //TODO: Tester vi at denne oppfører seg riktig hvis det kommer nettverksfeil. At den restartes osv?
+    // TODO: Tester vi at denne oppfører seg riktig hvis det kommer nettverksfeil. At den restartes osv?
+    // TODO: Jeg tror denne kan erstattes av en retry i metoden watchBlocking. Som retryer på samme condition som catch blokken her
     fun watch(url: String, types: List<String> = emptyList(), fn: suspend (JsonNode) -> Unit) {
         var stopped = false
         while (!stopped) {
@@ -72,7 +73,8 @@ class KubernetesWatcher(
                         it.at("/type").textValue() in types
                     }
                 }.flatMap {
-                    // TODO: Set things in this scope if we need it
+                    // TODO: hvis vi skal håndtere å sende med resourceVersion på retry så må vi hente den ut her og sette den en plass, og så må urlen til execute genereres utifra denne informasjonen. F.eks en ConcurrentHashMap fra url til siste revisjon eller noe slikt
+                    // TODO: trenger vi å sette noe fra spring i dette scopet? ThreadLocals mdc osv?
                     mono {
                         try {
                             fn(it)
@@ -80,7 +82,14 @@ class KubernetesWatcher(
                             logger.info("Caught error from watch handle function", e)
                         }
                     }
-                }.then()
+                }/*.retry { //TODO: Kan denne brukes fremfor koden over? Hvis vi har test på det kan vi sjekke
+                   val stopped= closeableWatcher.stop(it)
+                    if(!stopped) {
+                        logger.error("error occured in watch", it)
+                    }
+                    stopped
+                }*/
+                .then()
         }.block()
     }
 }
