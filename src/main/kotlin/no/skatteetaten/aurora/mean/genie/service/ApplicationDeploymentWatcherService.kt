@@ -32,7 +32,7 @@ class ApplicationDeploymentWatcherService(
     }
 
     suspend fun handleDeleteDatabaseSchema(id: String, labels: Map<String, String>): JsonNode? {
-        logger.debug { "Handle schema with with id=$id labels=$labels" }
+        logger.debug { "Handle schema with id=$id labels=$labels" }
         val dbhResult = databaseService.getSchemaById(id) ?: return null
 
         logger.debug { "Found schema with details $dbhResult" }
