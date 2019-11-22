@@ -49,28 +49,24 @@ class MeanGenieIntegrationTest {
         dbh.enqueue(
             MockResponse()
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setResponseCode(200)
                 .setBody(createGetSchemaResultJson("123"))
         )
 
         dbh.enqueue(
             MockResponse()
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setResponseCode(200)
                 .setBody(""" {}""")
         )
 
         dbh.enqueue(
             MockResponse()
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setResponseCode(200)
                 .setBody(createGetSchemaResultJson("234"))
         )
 
         dbh.enqueue(
             MockResponse()
                 .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setResponseCode(200)
                 .setBody(""" {}""")
         )
 
