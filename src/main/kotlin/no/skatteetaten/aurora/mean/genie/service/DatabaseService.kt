@@ -8,6 +8,9 @@ import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpMethod
+import org.springframework.http.HttpMethod.DELETE
+import org.springframework.http.HttpMethod.GET
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
@@ -25,19 +28,14 @@ class DatabaseService(
     @Value("\${integrations.dbh.retry.times:3}") val retryTimes: Long
 ) {
 
-    suspend fun deleteSchemaByID(databaseId: String): JsonNode {
-        return webClient
-            .delete()
-            .uri("/api/v1/schema/{database}", databaseId)
-            .retrieve()
-            .bodyToMono<JsonNode>()
-            .retryWithLog(retryMinDelay, retryMaxDelay, retryTimes)
-            .awaitFirst()
-    }
+    suspend fun deleteSchemaById(databaseId: String): JsonNode = request(DELETE, databaseId).awaitFirst()
 
-    suspend fun getSchemaById(databaseId: String): DatabaseResult? {
+    suspend fun getSchemaById(databaseId: String): DatabaseResult? =
+        request(GET, databaseId).map { it.toDatabaseResponse() }.awaitFirstOrNull()
+
+    private fun request(method: HttpMethod, databaseId: String): Mono<JsonNode> {
         return webClient
-            .get()
+            .method(method)
             .uri("/api/v1/schema/{database}", databaseId)
             .retrieve()
             .bodyToMono<JsonNode>()
@@ -45,8 +43,6 @@ class DatabaseService(
                 Mono.empty()
             }
             .retryWithLog(retryMinDelay, retryMaxDelay, retryTimes)
-            .map { it.toDatabaseResponse() }
-            .awaitFirstOrNull()
     }
 
     private fun JsonNode.toDatabaseResponse(): DatabaseResult {

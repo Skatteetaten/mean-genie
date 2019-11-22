@@ -47,8 +47,11 @@ class ApplicationConfig(
         @Value("\${integrations.openshift.url}") openshiftUrl: String,
         @Value("\${integrations.openshift.tokenLocation:file:/var/run/secrets/kubernetes.io/serviceaccount/token}") token: Resource
     ): ReactorNettyWebSocketClient {
+        val tcp = TcpClient.create()
+            .option(ChannelOption.SO_KEEPALIVE, true)
+      //      .option(ChannelOption.SO_TIMEOUT, 0)
         return ReactorNettyWebSocketClient(
-            HttpClient.create()
+            HttpClient.from(tcp)
                 .baseUrl(openshiftUrl)
                 .headers {
                     it.add(HttpHeaders.AUTHORIZATION, "Bearer ${token.readContent()}")

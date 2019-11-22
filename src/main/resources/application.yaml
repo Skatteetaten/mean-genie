@@ -13,7 +13,9 @@ logging:
             apache:
                 catalina: WARN
                 velocity: WARN
-
+        reactor:
+            ipc:
+                netty: DEBUG
 server:
     tomcat:
         mbeanregistry:

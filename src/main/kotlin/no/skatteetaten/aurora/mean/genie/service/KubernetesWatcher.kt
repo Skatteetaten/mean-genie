@@ -51,6 +51,8 @@ class KubernetesWatcher(
             logger.debug("Started watch on url={}", url)
             try {
                 watchBlocking(url, types, fn)
+                // This will stop without error after 5 minutes
+                logger.debug("Done watching")
             } catch (t: Throwable) {
                 stopped = closeableWatcher.stop(t)
                 if (!stopped) {
@@ -75,6 +77,8 @@ class KubernetesWatcher(
                 }.flatMap {
                     mono {
                         try {
+                            // TODO remove
+                            logger.debug("Received event")
                             fn(it)
                         } catch (e: Exception) {
                             logger.info("Caught error from watch handle function", e)

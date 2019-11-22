@@ -57,9 +57,9 @@ class DatabaseServiceTest {
     }
 
     @Test
-    fun `Verify that deleteSchemaByID returns body that is not null`() {
+    fun `Verify that deleteSchemaById returns body that is not null`() {
         val request = server.execute(200 to jsonBody) {
-            val jsonResponse = runBlocking { databaseService.deleteSchemaByID("123") }
+            val jsonResponse = runBlocking { databaseService.deleteSchemaById("123") }
             assertThat(jsonResponse).isNotNull()
         }
         assertThat(request.first()).isNotNull()
@@ -69,7 +69,7 @@ class DatabaseServiceTest {
     fun `Verify that deleteSchemaByID should not retry not authenticated error`() {
         val request = server.execute(401 to jsonBody) {
             assertThat {
-                runBlocking { databaseService.deleteSchemaByID("123") }
+                runBlocking { databaseService.deleteSchemaById("123") }
             }.isFailure()
         }
         assertThat(request.first()).isNotNull()
@@ -78,7 +78,7 @@ class DatabaseServiceTest {
     @Test
     fun `Verify that deleteSchemaByID should retry 503 error`() {
         val request = server.execute(503 to jsonBody, 200 to jsonBody) {
-            val jsonResponse = runBlocking { databaseService.deleteSchemaByID("123") }
+            val jsonResponse = runBlocking { databaseService.deleteSchemaById("123") }
             assertThat(jsonResponse).isNotNull()
         }
         assertThat(request.size).isEqualTo(2)
@@ -87,9 +87,11 @@ class DatabaseServiceTest {
     @Test
     fun `Verify that deleteSchemaByID should retry 503 error 3 times`() {
         val request = server.execute(503 to jsonBody, 503 to jsonBody, 503 to jsonBody) {
-            assertThat {
-                runBlocking { databaseService.deleteSchemaByID("123") }
-            }.isFailure()
+            runBlocking {
+                assertThat {
+                    databaseService.deleteSchemaById("123")
+                }.isFailure()
+            }
         }
         assertThat(request.size).isEqualTo(3)
     }

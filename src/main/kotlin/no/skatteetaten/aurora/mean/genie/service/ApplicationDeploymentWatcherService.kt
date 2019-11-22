@@ -19,6 +19,7 @@ class ApplicationDeploymentWatcherService(
     fun watch() {
         val labelSelector = checkForOperationScopeLabel()
         val url = "/apis/skatteetaten.no/v1/applicationdeployments?watch=true&labelSelector=$labelSelector"
+
         watcher.watch(url, listOf("DELETED")) { event ->
             val dbhEvent = event.toKubernetesDatabaseEvent()
             dbhEvent.databases.forEach {
@@ -44,8 +45,8 @@ class ApplicationDeploymentWatcherService(
         val dbhResult = databaseService.getSchemaById(id) ?: return null
 
         logger.debug { "Found schema with details $dbhResult" }
-        return if (dbhResult.type != "EXTERNAL" && dbhResult.labels == labels) {
-            databaseService.deleteSchemaByID(dbhResult.id).also {
+        return if (dbhResult.type == "MANAGED" && dbhResult.labels == labels) {
+            databaseService.deleteSchemaById(dbhResult.id).also {
                 logger.info { "Deleted schema with id=$id" }
             }
         } else null

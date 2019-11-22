@@ -36,13 +36,17 @@ class ApplicationDeploymentWatcherServiceTest {
     fun `Set database to cooldown if found`() {
 
         coEvery { databaseService.getSchemaById("123") } returns createMockSchemaRequest("123")
-        coEvery { databaseService.deleteSchemaByID("123") } returns jacksonObjectMapper().readTree("""{}""")
+        coEvery { databaseService.deleteSchemaById("123") } returns jacksonObjectMapper().readTree("""{}""")
 
-        val database = runBlocking { applicationDeploymentWatcherService.handleDeleteDatabaseSchema("123", mapOf(
-            "affiliation" to "test",
-            "application" to "test-app",
-            "environment" to "test-utv"
-        )) }
+        val database = runBlocking {
+            applicationDeploymentWatcherService.handleDeleteDatabaseSchema(
+                "123", mapOf(
+                    "affiliation" to "test",
+                    "application" to "test-app",
+                    "environment" to "test-utv"
+                )
+            )
+        }
         assertThat(database).isNotNull()
     }
 
@@ -51,16 +55,16 @@ class ApplicationDeploymentWatcherServiceTest {
 
         coEvery { databaseService.getSchemaById("123") } returns createMockSchemaRequest("123")
 
-        val database = runBlocking {
-            applicationDeploymentWatcherService.handleDeleteDatabaseSchema(
+        runBlocking {
+            val result = applicationDeploymentWatcherService.handleDeleteDatabaseSchema(
                 "123", mapOf(
                     "affiliation" to "test2",
                     "application" to "test-app",
                     "environment" to "test-utv"
                 )
             )
+            assertThat(result).isNull()
         }
-        assertThat(database).isNull()
     }
 
     @Test
