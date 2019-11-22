@@ -7,14 +7,14 @@ import assertk.assertions.isNotNull
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import no.skatteetaten.aurora.mean.genie.ApplicationConfig
 import no.skatteetaten.aurora.mockmvc.extensions.mockwebserver.execute
 import okhttp3.mockwebserver.MockWebServer
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInstance
 
-private val logger = KotlinLogging.logger {}
-
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 class DatabaseServiceTest {
     private val server = MockWebServer()
     private val url = server.url("/").toString()
@@ -29,6 +29,11 @@ class DatabaseServiceTest {
             applicationConfig.dbhTcpClientWrapper(1000, 1000, 1000, null), url
         )
     private val databaseService = DatabaseService(webClient, 50, 100)
+
+    @AfterEach
+    fun tearDown() {
+        server.shutdown()
+    }
 
     @Test
     fun `Verify that getSchema returns body `() {
