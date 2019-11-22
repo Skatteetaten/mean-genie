@@ -31,6 +31,14 @@ class ApplicationDeploymentWatcherService(
         }
     }
 
+    fun checkForOperationScopeLabel(): String {
+        return if (operationScopeConfiguration.isNullOrEmpty()) {
+            "!operationScope"
+        } else {
+            "operationScope=$operationScopeConfiguration"
+        }
+    }
+
     suspend fun handleDeleteDatabaseSchema(id: String, labels: Map<String, String>): JsonNode? {
         logger.debug { "Handle schema with id=$id labels=$labels" }
         val dbhResult = databaseService.getSchemaById(id) ?: return null
@@ -43,26 +51,18 @@ class ApplicationDeploymentWatcherService(
         } else null
     }
 
-    fun checkForOperationScopeLabel(): String {
-        return if (operationScopeConfiguration.isNullOrEmpty()) {
-            "!operationScope"
-        } else {
-            "operationScope=$operationScopeConfiguration"
-        }
+    private fun JsonNode.toKubernetesDatabaseEvent(): KubernetesDatabaseEvent {
+
+        val labels = mapOf(
+            "environment" to at("/object/metadata/namespace").textValue(),
+            "application" to at("/object/metadata/name").textValue(),
+            "affiliation" to at("/object/metadata/labels/affiliation").textValue()
+        )
+
+        val databases = (this.at("/object/spec/databases") as ArrayNode).map { it.textValue() }
+
+        return KubernetesDatabaseEvent(databases, labels)
     }
-}
-
-fun JsonNode.toKubernetesDatabaseEvent(): KubernetesDatabaseEvent {
-
-    val labels = mapOf(
-        "environment" to at("/object/metadata/namespace").textValue(),
-        "application" to at("/object/metadata/name").textValue(),
-        "affiliation" to at("/object/metadata/labels/affiliation").textValue()
-    )
-
-    val databases = (this.at("/object/spec/databases") as ArrayNode).map { it.textValue() }
-
-    return KubernetesDatabaseEvent(databases, labels)
 }
 
 data class KubernetesDatabaseEvent(val databases: List<String>, val labels: Map<String, String>)

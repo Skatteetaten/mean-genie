@@ -2,6 +2,8 @@ package no.skatteetaten.aurora.mean.genie.service
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import java.net.ConnectException
+import java.net.URI
 import kotlinx.coroutines.reactor.mono
 import mu.KotlinLogging
 import org.springframework.context.annotation.Profile
@@ -9,8 +11,6 @@ import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient
 import reactor.netty.http.client.PrematureCloseException
-import java.net.ConnectException
-import java.net.URI
 
 /**
  * The integration test will stop the mock openshift server, which will cause a PrematureCloseException or ConnectException.
@@ -55,6 +55,8 @@ class KubernetesWatcher(
                 stopped = closeableWatcher.stop(t)
                 if (!stopped) {
                     logger.warn("error occurred in watch", t)
+                } else {
+                    logger.debug("Error occured message=${t.localizedMessage} class=${t.javaClass}")
                 }
             }
         }
