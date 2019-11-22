@@ -1,6 +1,6 @@
 logging:
   level:
-    no.skatteetaten.aurora.mokey: INFO
+      no.skatteetaten.aurora.mean.genie: DEBUG
     org:
       hibernate: WARN
       springframework: WARN

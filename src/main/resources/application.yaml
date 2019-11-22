@@ -6,7 +6,7 @@ spring:
 
 logging:
     level:
-        no.skatteetaten.aurora.mean.genie: INFO
+        no.skatteetaten.aurora.mean.genie: DEBUG
         org:
             hibernate: WARN
             springframework: WARN

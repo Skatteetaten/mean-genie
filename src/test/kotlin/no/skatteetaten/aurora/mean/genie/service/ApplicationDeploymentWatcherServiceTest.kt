@@ -3,6 +3,7 @@ package no.skatteetaten.aurora.mean.genie.service
 import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isNotNull
+import assertk.assertions.isNull
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -43,6 +44,40 @@ class ApplicationDeploymentWatcherServiceTest {
             "environment" to "test-utv"
         )) }
         assertThat(database).isNotNull()
+    }
+
+    @Test
+    fun `ignore database with wrong labels`() {
+
+        coEvery { databaseService.getSchemaById("123") } returns createMockSchemaRequest("123")
+
+        val database = runBlocking {
+            applicationDeploymentWatcherService.handleDeleteDatabaseSchema(
+                "123", mapOf(
+                    "affiliation" to "test2",
+                    "application" to "test-app",
+                    "environment" to "test-utv"
+                )
+            )
+        }
+        assertThat(database).isNull()
+    }
+
+    @Test
+    fun `ignore database that is external`() {
+
+        coEvery { databaseService.getSchemaById("123") } returns createMockSchemaRequest("123", "EXTERNAL")
+
+        val database = runBlocking {
+            applicationDeploymentWatcherService.handleDeleteDatabaseSchema(
+                "123", mapOf(
+                    "affiliation" to "test",
+                    "application" to "test-app",
+                    "environment" to "test-utv"
+                )
+            )
+        }
+        assertThat(database).isNull()
     }
 }
 
