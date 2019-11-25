@@ -49,7 +49,7 @@ class ApplicationConfig(
     ): ReactorNettyWebSocketClient {
         val tcp = TcpClient.create()
             .option(ChannelOption.SO_KEEPALIVE, true)
-      //      .option(ChannelOption.SO_TIMEOUT, 0)
+        // .option(ChannelOption.SO_TIMEOUT, 0)
         return ReactorNettyWebSocketClient(
             HttpClient.from(tcp)
                 .baseUrl(openshiftUrl)
