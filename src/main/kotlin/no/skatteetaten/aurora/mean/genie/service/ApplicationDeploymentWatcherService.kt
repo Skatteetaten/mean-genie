@@ -32,12 +32,10 @@ class ApplicationDeploymentWatcherService(
         }
     }
 
-    fun checkForOperationScopeLabel(): String {
-        return if (operationScopeConfiguration.isNullOrEmpty()) {
-            "!operationScope"
-        } else {
-            "operationScope=$operationScopeConfiguration"
-        }
+    fun checkForOperationScopeLabel() = if (operationScopeConfiguration.isNullOrEmpty()) {
+        "!operationScope"
+    } else {
+        "operationScope=$operationScopeConfiguration"
     }
 
     suspend fun handleDeleteDatabaseSchema(id: String, labels: Map<String, String>): JsonNode? {

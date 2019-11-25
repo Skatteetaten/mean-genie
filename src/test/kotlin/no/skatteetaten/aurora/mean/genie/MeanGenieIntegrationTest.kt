@@ -45,28 +45,11 @@ class MeanGenieIntegrationTest {
         openshift.enqueue(MockResponse().withWebSocketUpgrade(openshiftListener))
         openshift.start("openshift".port())
 
-        dbh.enqueue(
-            MockResponse()
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody(createGetSchemaResultJson("123"))
-        )
-
-        dbh.enqueue(
-            MockResponse()
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody(""" {}""")
-        )
-
-        dbh.enqueue(
-            MockResponse()
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody(createGetSchemaResultJson("234"))
-        )
-
-        dbh.enqueue(
-            MockResponse()
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody(""" {}""")
+        dbh.enqueueJson(
+            MockResponse().setBody(createGetSchemaResultJson("123")),
+            MockResponse().setBody("""{}"""),
+            MockResponse().setBody(createGetSchemaResultJson("234")),
+            MockResponse().setBody("""{}""")
         )
 
         dbh.start("dbh".port())
@@ -117,6 +100,13 @@ class MeanGenieIntegrationTest {
         val yaml = ClassPathResource("application.yaml").file.readText()
         val values = ObjectMapper(YAMLFactory()).readTree(yaml)
         return values.at("/integrations/$this/port").asInt()
+    }
+
+    private fun MockWebServer.enqueueJson(vararg responses: MockResponse) {
+        responses.forEach {
+            it.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            this.enqueue(it)
+        }
     }
 
     private fun MockWebServer.assertThat(): Assert<List<RecordedRequest>> {
