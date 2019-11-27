@@ -47,8 +47,11 @@ class ApplicationConfig(
         @Value("\${integrations.openshift.url}") openshiftUrl: String,
         @Value("\${integrations.openshift.tokenLocation:file:/var/run/secrets/kubernetes.io/serviceaccount/token}") token: Resource
     ): ReactorNettyWebSocketClient {
+        val tcp = TcpClient.create()
+            .option(ChannelOption.SO_KEEPALIVE, true)
+        // .option(ChannelOption.SO_TIMEOUT, 0)
         return ReactorNettyWebSocketClient(
-            HttpClient.create()
+            HttpClient.from(tcp)
                 .baseUrl(openshiftUrl)
                 .headers {
                     it.add(HttpHeaders.AUTHORIZATION, "Bearer ${token.readContent()}")
@@ -60,10 +63,10 @@ class ApplicationConfig(
     @Bean
     fun webClientDbh(
         @Qualifier("dbh") tcpClient: TcpClient,
-        @Value("\${integrations.dbh.url}") dbhUrl: String
+        @Value("\${integrations.dbh.url}") dbhUrl: String,
+        webclientBuilder: WebClient.Builder
     ): WebClient =
-        WebClient
-            .builder()
+        webclientBuilder
             .baseUrl(dbhUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
             .defaultHeader(HEADER_KLIENTID, applicationName)

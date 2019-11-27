@@ -7,7 +7,7 @@ import assertk.assertions.support.expected
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import java.util.concurrent.TimeUnit
-import no.skatteetaten.aurora.mean.genie.service.createMockSchemaRequestString
+import no.skatteetaten.aurora.mean.genie.service.createGetSchemaResultJson
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
@@ -45,33 +45,11 @@ class MeanGenieIntegrationTest {
         openshift.enqueue(MockResponse().withWebSocketUpgrade(openshiftListener))
         openshift.start("openshift".port())
 
-        // TODO: Er ikke dsl metoden jeg lagde for boober bedre å bruke her?
-        dbh.enqueue(
-            MockResponse()
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setResponseCode(200)
-                .setBody(createMockSchemaRequestString("123"))
-        )
-
-        dbh.enqueue(
-            MockResponse()
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setResponseCode(200)
-                .setBody(createMockSchemaRequestString("234"))
-        )
-
-        dbh.enqueue(
-            MockResponse()
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setResponseCode(200)
-                .setBody(createMockSchemaRequestString("123"))
-        )
-
-        dbh.enqueue(
-            MockResponse()
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setResponseCode(200)
-                .setBody(createMockSchemaRequestString("234"))
+        dbh.enqueueJson(
+            MockResponse().setBody(createGetSchemaResultJson("123")),
+            MockResponse().setBody("""{}"""),
+            MockResponse().setBody(createGetSchemaResultJson("234")),
+            MockResponse().setBody("""{}""")
         )
 
         dbh.start("dbh".port())
@@ -122,6 +100,13 @@ class MeanGenieIntegrationTest {
         val yaml = ClassPathResource("application.yaml").file.readText()
         val values = ObjectMapper(YAMLFactory()).readTree(yaml)
         return values.at("/integrations/$this/port").asInt()
+    }
+
+    private fun MockWebServer.enqueueJson(vararg responses: MockResponse) {
+        responses.forEach {
+            it.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            this.enqueue(it)
+        }
     }
 
     private fun MockWebServer.assertThat(): Assert<List<RecordedRequest>> {

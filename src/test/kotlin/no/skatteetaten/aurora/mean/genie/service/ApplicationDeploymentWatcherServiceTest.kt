@@ -2,12 +2,13 @@ package no.skatteetaten.aurora.mean.genie.service
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
+import assertk.assertions.isNotNull
+import assertk.assertions.isNull
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.mockk
-import java.time.Duration
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
-import reactor.kotlin.core.publisher.toMono
 
 class ApplicationDeploymentWatcherServiceTest {
 
@@ -34,31 +35,53 @@ class ApplicationDeploymentWatcherServiceTest {
     @Test
     fun `Set database to cooldown if found`() {
 
-        every { databaseService.getSchemaById("123") } returns createMockSchemaRequest("123").toMono()
-        every { databaseService.getSchemaById("234") } returns createMockSchemaRequest("234").toMono()
+        coEvery { databaseService.getSchemaById("123") } returns createMockSchemaRequest("123")
+        coEvery { databaseService.deleteSchemaById("123") } returns jacksonObjectMapper().readTree("""{}""")
 
-        // TODO: Should this mock return be better so that we can assert below
-        every { databaseService.deleteSchemaByID("123") } returns jacksonObjectMapper().readTree("""{}""").toMono()
-        every { databaseService.deleteSchemaByID("234") } returns jacksonObjectMapper().readTree("""{}""").toMono()
+        val database = runBlocking {
+            applicationDeploymentWatcherService.handleDeleteDatabaseSchema(
+                "123", mapOf(
+                    "affiliation" to "test",
+                    "application" to "test-app",
+                    "environment" to "test-utv"
+                )
+            )
+        }
+        assertThat(database).isNotNull()
+    }
 
-        val json = """{
-            "object": {
-              "metadata" : {
-                "name" : "test-app", 
-                "namespace" : "test-utv", 
-                "labels" : {
-                  "affiliation" : "test"
-                }
-              },
-              "spec": {
-                "databases": ["123","234"] 
-                } 
-               } 
-            }"""
-        val jsonNode = jacksonObjectMapper().readTree(json)
-        val response = applicationDeploymentWatcherService.deleteSchemasIfExists(jsonNode)
-        val databases = response.timeout(Duration.ofSeconds(1)).toIterable().toList()
-        assertThat(databases.size).isEqualTo(2)
+    @Test
+    fun `ignore database with wrong labels`() {
+
+        coEvery { databaseService.getSchemaById("123") } returns createMockSchemaRequest("123")
+
+        runBlocking {
+            val result = applicationDeploymentWatcherService.handleDeleteDatabaseSchema(
+                "123", mapOf(
+                    "affiliation" to "test2",
+                    "application" to "test-app",
+                    "environment" to "test-utv"
+                )
+            )
+            assertThat(result).isNull()
+        }
+    }
+
+    @Test
+    fun `ignore database that is external`() {
+
+        coEvery { databaseService.getSchemaById("123") } returns createMockSchemaRequest("123", "EXTERNAL")
+
+        val database = runBlocking {
+            applicationDeploymentWatcherService.handleDeleteDatabaseSchema(
+                "123", mapOf(
+                    "affiliation" to "test",
+                    "application" to "test-app",
+                    "environment" to "test-utv"
+                )
+            )
+        }
+        assertThat(database).isNull()
     }
 }
 
@@ -73,7 +96,7 @@ fun createMockSchemaRequest(id: String, type: String = "MANAGED"): DatabaseResul
     )
 }
 
-fun createMockSchemaRequestString(id: String, type: String = "MANAGED"): String {
+fun createGetSchemaResultJson(id: String, type: String = "MANAGED"): String {
     return """
             {
               "items": [
