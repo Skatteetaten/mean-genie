@@ -6,14 +6,16 @@ spring:
 
 logging:
     level:
-        no.skatteetaten.aurora.mean.genie: INFO
+        no.skatteetaten.aurora.mean.genie: DEBUG
         org:
             hibernate: WARN
             springframework: WARN
             apache:
                 catalina: WARN
                 velocity: WARN
-
+        reactor:
+            ipc:
+                netty: DEBUG
 server:
     tomcat:
         mbeanregistry:
@@ -35,8 +37,6 @@ integrations:
         tokenLocation: file:/tmp/reader-token
     dbh:
         url: "http://dbh-aurora.qa.paas.skead.no"
-    operations:
-        scope: "dev"
 
 logging:
     pattern:

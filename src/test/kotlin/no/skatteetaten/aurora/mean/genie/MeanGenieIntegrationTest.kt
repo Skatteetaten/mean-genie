@@ -2,11 +2,12 @@ package no.skatteetaten.aurora.mean.genie
 
 import assertk.Assert
 import assertk.assertThat
-import assertk.assertions.isNull
+import assertk.assertions.isEmpty
 import assertk.assertions.support.expected
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import java.util.concurrent.TimeUnit
+import no.skatteetaten.aurora.mean.genie.service.createGetSchemaResultJson
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
@@ -21,6 +22,8 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.core.io.ClassPathResource
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod
+import org.springframework.http.HttpMethod.DELETE
+import org.springframework.http.HttpMethod.GET
 import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 
@@ -42,12 +45,13 @@ class MeanGenieIntegrationTest {
         openshift.enqueue(MockResponse().withWebSocketUpgrade(openshiftListener))
         openshift.start("openshift".port())
 
-        dbh.enqueue(
-            MockResponse()
-                .setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setResponseCode(200)
-                .setBody("{}")
+        dbh.enqueueJson(
+            MockResponse().setBody(createGetSchemaResultJson("123")),
+            MockResponse().setBody("""{}"""),
+            MockResponse().setBody(createGetSchemaResultJson("234")),
+            MockResponse().setBody("""{}""")
         )
+
         dbh.start("dbh".port())
     }
 
@@ -60,12 +64,28 @@ class MeanGenieIntegrationTest {
     @Test
     fun `Receive deleted event and call dbh`() {
         val webSocket = await untilNotNull { openshiftListener.webSocket }
-        webSocket.send(""" { "type":"DELETED", "object": { "spec": { "databases": ["123", "234"] } } } """)
+        val json = """{
+            "type" : "DELETED",
+            "object": {
+              "metadata" : {
+                "name" : "test-app", 
+                "namespace" : "test-utv", 
+                "labels" : {
+                  "affiliation" : "test"
+                }
+              },
+              "spec": {
+                "databases": ["123","234"] 
+                } 
+               } 
+            }"""
+        webSocket.send(json)
 
-        val request1 = dbh.takeRequest(1, TimeUnit.SECONDS)
-        assertThat(request1).isDeleteRequest("/api/v1/schema/123")
-        val request2 = dbh.takeRequest(1, TimeUnit.SECONDS)
-        assertThat(request2).isDeleteRequest("/api/v1/schema/234")
+        dbh.assertThat()
+            .containsRequest(GET, "/api/v1/schema/123")
+            .containsRequest(GET, "/api/v1/schema/234")
+            .containsRequest(DELETE, "/api/v1/schema/123")
+            .containsRequest(DELETE, "/api/v1/schema/234")
     }
 
     @Test
@@ -73,8 +93,7 @@ class MeanGenieIntegrationTest {
         val webSocket = await untilNotNull { openshiftListener.webSocket }
         webSocket.send(""" { "type":"DELETED", "object": { "spec": { "databases": [] } } } """)
 
-        val request = dbh.takeRequest(500, TimeUnit.MILLISECONDS)
-        assertThat(request).isNull()
+        dbh.assertThat().isEmpty()
     }
 
     private fun String.port(): Int {
@@ -83,8 +102,29 @@ class MeanGenieIntegrationTest {
         return values.at("/integrations/$this/port").asInt()
     }
 
-    private fun Assert<RecordedRequest>.isDeleteRequest(path: String) = given {
-        if (it.path == path && it.method == HttpMethod.DELETE.name) return
-        expected("DELETE request with path $path but was ${it.method} ${it.path}")
+    private fun MockWebServer.enqueueJson(vararg responses: MockResponse) {
+        responses.forEach {
+            it.setHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+            this.enqueue(it)
+        }
     }
+
+    private fun MockWebServer.assertThat(): Assert<List<RecordedRequest>> {
+        val requests = mutableListOf<RecordedRequest>()
+        do {
+            val request = this.takeRequest(500, TimeUnit.MILLISECONDS)?.let {
+                requests.add(it)
+            }
+        } while (request != null)
+        return assertThat(requests)
+    }
+
+    private fun Assert<List<RecordedRequest>>.containsRequest(method: HttpMethod, path: String): Assert<List<RecordedRequest>> =
+        transform { requests ->
+            if (requests.any { it.method == method.name && it.path == path }) {
+                requests
+            } else {
+                expected("${method.name} request with $path but was $requests")
+            }
+        }
 }

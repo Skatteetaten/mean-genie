@@ -2,20 +2,20 @@ package no.skatteetaten.aurora.mean.genie.service
 
 import assertk.assertThat
 import assertk.assertions.isEqualTo
-import org.junit.Test
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Test
 
 class SharedSecretReaderTest {
 
     @Test
     fun `Instance without secretLocation and secretValue throws exception`() {
-        Assertions.assertThrows(IllegalArgumentException::class.java) {
+        assertThrows(IllegalArgumentException::class.java) {
             SharedSecretReader(null, null)
         }
     }
 
     @Test
-    fun `Defiend secretValue exposes value`() {
+    fun `Defined secretValue exposes value`() {
         val testValue = "testValue"
         val sharedSecretReader = SharedSecretReader(null, testValue)
         assertThat(sharedSecretReader.secret).isEqualTo(testValue)
@@ -31,7 +31,7 @@ class SharedSecretReaderTest {
     @Test
     fun `Invalid secretLocation throws exception`() {
         val secretLocation = "wrong/url/nothing/here/token"
-        Assertions.assertThrows(IllegalStateException::class.java) {
+        assertThrows(IllegalStateException::class.java) {
             SharedSecretReader(secretLocation, null)
         }
     }

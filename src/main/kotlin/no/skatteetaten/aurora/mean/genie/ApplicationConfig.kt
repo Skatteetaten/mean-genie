@@ -38,6 +38,7 @@ const val HEADER_KLIENTID = "KlientID"
 @EnableAsync
 class ApplicationConfig(
     @Value("\${spring.application.name}") val applicationName: String,
+    @Value("\${aurora.version}") val auroraVersion: String,
     val sharedSecretReader: SharedSecretReader
 ) : BeanPostProcessor {
 
@@ -47,12 +48,13 @@ class ApplicationConfig(
         @Value("\${integrations.openshift.url}") openshiftUrl: String,
         @Value("\${integrations.openshift.tokenLocation:file:/var/run/secrets/kubernetes.io/serviceaccount/token}") token: Resource
     ): ReactorNettyWebSocketClient {
+
         return ReactorNettyWebSocketClient(
             HttpClient.create()
                 .baseUrl(openshiftUrl)
                 .headers {
                     it.add(HttpHeaders.AUTHORIZATION, "Bearer ${token.readContent()}")
-                    it.add("User-Agent", applicationName)
+                    it.add("User-Agent", "$applicationName/$auroraVersion")
                 }
         )
     }
@@ -60,13 +62,13 @@ class ApplicationConfig(
     @Bean
     fun webClientDbh(
         @Qualifier("dbh") tcpClient: TcpClient,
-        @Value("\${integrations.dbh.url}") dbhUrl: String
+        @Value("\${integrations.dbh.url}") dbhUrl: String,
+        webclientBuilder: WebClient.Builder
     ): WebClient =
-        WebClient
-            .builder()
+        webclientBuilder
             .baseUrl(dbhUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .defaultHeader(HEADER_KLIENTID, applicationName)
+            .defaultHeader(HEADER_KLIENTID, "$applicationName/$auroraVersion")
             .defaultHeader(AuroraHeaderFilter.KORRELASJONS_ID, UUID.randomUUID().toString())
             .defaultHeader(HttpHeaders.AUTHORIZATION, "aurora-token ${sharedSecretReader.secret}")
             .clientConnector(
