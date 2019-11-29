@@ -25,5 +25,6 @@ integrations:
         url: http://localhost:${integrations.dbh.port}
 
 aurora:
+    version: 123
     token:
         value: test-token

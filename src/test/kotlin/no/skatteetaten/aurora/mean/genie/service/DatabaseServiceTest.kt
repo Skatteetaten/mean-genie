@@ -24,7 +24,7 @@ class DatabaseServiceTest {
     private val sharedSecretReader = mockk<SharedSecretReader> {
         every { secret } returns "abc123"
     }
-    private val applicationConfig = ApplicationConfig("mean-genie", sharedSecretReader)
+    private val applicationConfig = ApplicationConfig("mean-genie", "123", sharedSecretReader)
 
     private val webClient =
         applicationConfig.webClientDbh(
