@@ -16,7 +16,7 @@ import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.function.client.WebClientResponseException
 import org.springframework.web.reactive.function.client.bodyToMono
 import reactor.core.publisher.Mono
-import reactor.retry.Retry
+import reactor.util.retry.Retry
 
 private val logger = KotlinLogging.logger {}
 
@@ -62,23 +62,21 @@ class DatabaseService(
             return this
         }
 
-        return this.retryWhen(Retry.onlyIf<Mono<T>> {
-            if (it.iteration() == retryTimes) {
-                logger.info {
-                    val e = it.exception()
-                    val msg = "Retrying failed request, ${e.message}"
-                    if (e is WebClientResponseException) {
-                        "message=$msg, method=${e.request?.method} uri=${e.request?.uri} code=${e.statusCode}"
-                    } else {
-                        msg
-                    }
+        return this.retryWhen(
+            Retry.backoff(retryTimes, Duration.ofMillis(retryFirstInMs))
+                .maxBackoff(Duration.ofMillis(retryMaxInMs))
+                .filter { it !is WebClientResponseException.Unauthorized }
+                .doBeforeRetry { logger.debug("retrying message=${it.failure().message}") }
+        ).doOnError {
+            logger.info {
+                val msg = "Retrying failed request, ${it.message}, message=${it.cause?.message}"
+                if (it is WebClientResponseException) {
+                    "message=$msg, method=${it.request?.method} uri=${it.request?.uri} code=${it.statusCode}"
+                } else {
+                    msg
                 }
-            } else {
-                logger.debug("retrying message=${it.exception().message}")
             }
-
-            it.exception() !is WebClientResponseException.Unauthorized
-        }.exponentialBackoff(Duration.ofMillis(retryFirstInMs), Duration.ofMillis(retryMaxInMs)).retryMax(retryTimes))
+        }
     }
 }
 
