@@ -7,8 +7,6 @@ plugins {
 aurora {
     useKotlinDefaults
     useSpringBootDefaults
-    useAsciiDoctor
-    useSonar
 
     versions {
         javaSourceCompatibility = "17"
