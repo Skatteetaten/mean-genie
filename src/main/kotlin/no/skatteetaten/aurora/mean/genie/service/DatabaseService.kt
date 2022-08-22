@@ -68,12 +68,12 @@ class DatabaseService(
                 .filter { it !is WebClientResponseException.Unauthorized }
                 .doBeforeRetry { logger.debug("retrying message=${it.failure().message}") }
         ).doOnError {
-                        logger.info {
+            logger.info {
                 val msg = "Retrying failed request, ${it.message}, message=${it.cause?.message}"
                 if (it is WebClientResponseException) {
                     "message=$msg, method=${it.request?.method} uri=${it.request?.uri} code=${it.statusCode}"
                 } else {
-                        logger.debug("retrying message=${it.failure().message}")
+                    msg
                 }
             }
         }
