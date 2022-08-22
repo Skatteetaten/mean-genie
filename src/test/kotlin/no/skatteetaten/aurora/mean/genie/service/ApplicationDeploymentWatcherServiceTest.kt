@@ -40,7 +40,8 @@ class ApplicationDeploymentWatcherServiceTest {
 
         val database = runBlocking {
             applicationDeploymentWatcherService.handleDeleteDatabaseSchema(
-                "123", mapOf(
+                "123",
+                mapOf(
                     "affiliation" to "test",
                     "application" to "test-app",
                     "environment" to "test-utv"
@@ -57,7 +58,8 @@ class ApplicationDeploymentWatcherServiceTest {
 
         runBlocking {
             val result = applicationDeploymentWatcherService.handleDeleteDatabaseSchema(
-                "123", mapOf(
+                "123",
+                mapOf(
                     "affiliation" to "test2",
                     "application" to "test-app",
                     "environment" to "test-utv"
@@ -74,7 +76,8 @@ class ApplicationDeploymentWatcherServiceTest {
 
         val database = runBlocking {
             applicationDeploymentWatcherService.handleDeleteDatabaseSchema(
-                "123", mapOf(
+                "123",
+                mapOf(
                     "affiliation" to "test",
                     "application" to "test-app",
                     "environment" to "test-utv"
@@ -88,7 +91,8 @@ class ApplicationDeploymentWatcherServiceTest {
 fun createMockSchemaRequest(id: String, type: String = "MANAGED"): DatabaseResult {
 
     return DatabaseResult(
-        type, id, mapOf(
+        type, id,
+        mapOf(
             "application" to "test-app",
             "environment" to "test-utv",
             "affiliation" to "test"
@@ -113,5 +117,5 @@ fun createGetSchemaResultJson(id: String, type: String = "MANAGED"): String {
                }
                ]
             }
-        """.trimIndent()
+    """.trimIndent()
 }

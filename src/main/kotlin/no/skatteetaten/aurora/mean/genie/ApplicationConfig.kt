@@ -9,10 +9,8 @@ import java.nio.charset.StandardCharsets
 import java.security.KeyStore
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
-import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.TrustManagerFactory
-import no.skatteetaten.aurora.filter.logging.AuroraHeaderFilter
 import no.skatteetaten.aurora.mean.genie.service.SharedSecretReader
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
@@ -68,8 +66,6 @@ class ApplicationConfig(
         webclientBuilder
             .baseUrl(dbhUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .defaultHeader(HEADER_KLIENTID, "$applicationName/$auroraVersion")
-            .defaultHeader(AuroraHeaderFilter.KORRELASJONS_ID, UUID.randomUUID().toString())
             .defaultHeader(HttpHeaders.AUTHORIZATION, "aurora-token ${sharedSecretReader.secret}")
             .clientConnector(
                 ReactorClientHttpConnector(
