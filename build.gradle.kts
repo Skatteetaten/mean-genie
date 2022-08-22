@@ -21,7 +21,7 @@ dependencies {
 
     implementation("com.fkorotkov:kubernetes-dsl:2.8.1")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("org.springframework.boot:spring-boot-starter-webflux")
+    implementation("no.skatteetaten.aurora.springboot:aurora-spring-boot-webflux-starter:1.4.+")
     implementation("io.projectreactor.addons:reactor-extra:3.4.8")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.1.7")
 
@@ -32,6 +32,4 @@ dependencies {
     testImplementation("no.skatteetaten.aurora:mockwebserver-extensions-kotlin:1.3.1")
     testImplementation("io.projectreactor:reactor-test:3.4.22")
     testImplementation("org.awaitility:awaitility-kotlin:4.2.0")
-
-    implementation("com.squareup.okhttp3:okhttp:4.10.0")
 }
