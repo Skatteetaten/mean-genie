@@ -9,7 +9,7 @@ def overrides = [
     credentialsId: "github",
     checkstyle : false,
     docs: false,
-    javaVersion: 11,
+    javaVersion: 17,
     jiraFiksetIKomponentversjon: true,
     chatRoom: "#aos-notifications",
     versionStrategy: [
