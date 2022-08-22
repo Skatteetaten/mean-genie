@@ -65,17 +65,18 @@ class DatabaseService(
         return this.retryWhen(
             Retry.backoff(retryTimes, Duration.ofMillis(retryFirstInMs))
                 .maxBackoff(Duration.ofMillis(retryMaxInMs))
-                .doBeforeRetry {
-                    if (it.totalRetries() == retryTimes) {
+                .filter { it !is WebClientResponseException.Unauthorized }
+                .doBeforeRetry { logger.debug("retrying message=${it.failure().message}") }
+        ).doOnError {
                         logger.info {
-                            val e = it.failure()
-                            "Retrying failed request times=${it.totalRetries()} errorType=${e.javaClass.simpleName} errorMessage=${e.message}"
-                        }
-                    } else {
+                val msg = "Retrying failed request, ${it.message}, message=${it.cause?.message}"
+                if (it is WebClientResponseException) {
+                    "message=$msg, method=${it.request?.method} uri=${it.request?.uri} code=${it.statusCode}"
+                } else {
                         logger.debug("retrying message=${it.failure().message}")
-                    }
                 }
-        )
+            }
+        }
     }
 }
 
