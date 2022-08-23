@@ -3,13 +3,14 @@ def jenkinsfile
 def overrides = [
     scriptVersion  : 'v7',
     iqOrganizationName: "Team AOS",
+    iqEmbedded: true,
     iqBreakOnUnstable: true,
     compilePropertiesIq: "-x test",
     pipelineScript: 'https://git.aurora.skead.no/scm/ao/aurora-pipeline-scripts.git',
     credentialsId: "github",
     checkstyle : false,
     docs: false,
-    javaVersion: 11,
+    javaVersion: 17,
     jiraFiksetIKomponentversjon: true,
     chatRoom: "#aos-notifications",
     versionStrategy: [

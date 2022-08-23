@@ -9,14 +9,14 @@ import java.nio.charset.StandardCharsets
 import java.security.KeyStore
 import java.security.cert.CertificateFactory
 import java.security.cert.X509Certificate
-import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.TrustManagerFactory
-import no.skatteetaten.aurora.filter.logging.AuroraHeaderFilter
 import no.skatteetaten.aurora.mean.genie.service.SharedSecretReader
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.beans.factory.config.BeanPostProcessor
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration
+import org.springframework.boot.web.reactive.function.client.WebClientCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -28,6 +28,8 @@ import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.util.StreamUtils
 import org.springframework.web.reactive.function.client.WebClient
 import org.springframework.web.reactive.socket.client.ReactorNettyWebSocketClient
+import no.skatteetaten.aurora.webflux.AuroraWebClientCustomizer
+import no.skatteetaten.aurora.webflux.config.WebFluxStarterApplicationConfig
 import reactor.netty.http.client.HttpClient
 import reactor.netty.tcp.SslProvider
 import reactor.netty.tcp.TcpClient
@@ -36,6 +38,7 @@ const val HEADER_KLIENTID = "KlientID"
 
 @Configuration
 @EnableAsync
+@EnableAutoConfiguration(exclude = [WebFluxStarterApplicationConfig::class])
 class ApplicationConfig(
     @Value("\${spring.application.name}") val applicationName: String,
     @Value("\${aurora.version}") val auroraVersion: String,
@@ -60,6 +63,9 @@ class ApplicationConfig(
     }
 
     @Bean
+    fun webClientCustomizer(): WebClientCustomizer? = AuroraWebClientCustomizer(applicationName)
+
+    @Bean
     fun webClientDbh(
         @Qualifier("dbh") tcpClient: TcpClient,
         @Value("\${integrations.dbh.url}") dbhUrl: String,
@@ -68,8 +74,6 @@ class ApplicationConfig(
         webclientBuilder
             .baseUrl(dbhUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-            .defaultHeader(HEADER_KLIENTID, "$applicationName/$auroraVersion")
-            .defaultHeader(AuroraHeaderFilter.KORRELASJONS_ID, UUID.randomUUID().toString())
             .defaultHeader(HttpHeaders.AUTHORIZATION, "aurora-token ${sharedSecretReader.secret}")
             .clientConnector(
                 ReactorClientHttpConnector(
